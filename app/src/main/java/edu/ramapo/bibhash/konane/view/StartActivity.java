@@ -65,7 +65,8 @@ public class StartActivity extends Activity {
         AlertDialog.Builder prompt = new AlertDialog.Builder(this);
         prompt.setTitle("Load Game");
 
-        final File[] files = Environment.getExternalStorageDirectory().listFiles();
+        String fileDir = Environment.getExternalStorageDirectory().getAbsolutePath()+"/savefiles";
+        final File[] files = new File(fileDir).listFiles();
         List<String> nameList = new ArrayList<>();
         for (File file : files ){
             String name = file.getName();

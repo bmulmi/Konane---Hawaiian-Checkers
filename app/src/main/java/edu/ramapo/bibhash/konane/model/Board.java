@@ -28,6 +28,8 @@ public class Board{
     private Player whitePlayer = new Player();
     private State gameState = new State();
 
+    private boolean prune;
+    private int plyCutoff;
     public Queue<Pair<Integer,Integer>> DFSvisitedNodes = new LinkedList<>();
     public Queue<Pair<Integer,Integer>> BFSvisitedNodes = new LinkedList<>();
     public Queue<Pair<Integer, Integer>> BestFirstSearchList = new LinkedList<>();
@@ -70,6 +72,18 @@ public class Board{
         }
     }
 
+    /*
+    sets the prune status as true or false
+     */
+    public void setPrune(boolean v){
+        prune = v;
+    }
+    /*
+    sets the plyCutoff int value
+     */
+    public void setPlyCutoff(int v){
+        plyCutoff = v;
+    }
     /*
     returns the score of the Black Stone from Player Class
      */
@@ -140,8 +154,10 @@ public class Board{
     public void loadGame(InputStream is){
         gameState.setInputStream(is);
 
+        boardDimension = gameState.getDimension();
+        System.out.println(boardDimension);
         board = gameState.getBoard();
-
+        System.out.println(board);
         blackPlayer.setScore(gameState.getBlackScore());
         whitePlayer.setScore(gameState.getWhiteScore());
 

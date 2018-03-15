@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 public class State {
 
     InputStream is;
+    private int dimension;
     private int blackScore;
     private int whiteScore;
     private boolean blackTurn;
@@ -26,7 +27,6 @@ public class State {
     private String [][] board;
 
     public State(){
-        board = new String[6][6];
         blackTurn = true;
         whiteTurn = false;
         blackScore = 0;
@@ -42,6 +42,9 @@ public class State {
         getGameState();
     }
 
+    private void setDimension(String value){
+        dimension = Integer.parseInt(value);
+    }
     /*
     parameters passed String
     sets blackScore as parsedInt of String
@@ -81,15 +84,18 @@ public class State {
     */
     private void setBoard(String text){
         String str = text;
+        board = new String[dimension][dimension];
         String[] splitStr = str.split("\\s+");
         int h = 0;
-        for (int i = 0; i < 6; i++){
-            for (int j = 0; j < 6; j++){
+        for (int i = 0; i < dimension; i++){
+            for (int j = 0; j < dimension; j++){
                 board[i][j] = splitStr[h++];
             }
         }
     }
 
+    //returns the Dimension
+    public int getDimension(){return dimension; }
     //returns black player score
     public int getBlackScore(){
         return blackScore;
@@ -114,7 +120,7 @@ public class State {
     //reads the file and sets the game state accordingly
     public void getGameState(){
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        String [] textRead = new String[13];
+        String [] textRead = new String[15];
         try{
             String line;
             int index = 0;
@@ -125,10 +131,10 @@ public class State {
         catch (IOException e){
             e.printStackTrace();
         }
-        setBlackScore(textRead[1]);
-        setWhiteScore(textRead[4]);
-        setBoard(textRead[7]);
-        String turn = textRead[9];
+        setDimension(textRead[1].trim());
+        setBlackScore(textRead[3].trim());
+        setWhiteScore(textRead[5].trim());
+        String turn = textRead[7].trim();
         if (turn.toLowerCase().equals("white")){
             setWhiteTurn(true);
             setBlackTurn(false);
@@ -137,5 +143,6 @@ public class State {
             setWhiteTurn(false);
             setBlackTurn(true);
         }
+        setBoard(textRead[9]);
     }
 }

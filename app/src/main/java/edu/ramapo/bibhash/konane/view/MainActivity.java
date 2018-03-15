@@ -17,9 +17,15 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.app.Activity;
 import android.os.Environment;
+import android.preference.DialogPreference;
+import android.provider.Settings;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Pair;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
@@ -27,10 +33,15 @@ import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -71,15 +82,16 @@ public class MainActivity extends Activity {
 
         final Integer gameState = getIntent().getIntExtra("state", 1);
         final String boardSize = getIntent().getStringExtra("boardSize");
-        final int boardDimension;
-
-        if (boardSize.equals("6X6")) boardDimension = 6;
-        else if (boardSize.equals("8X8")) boardDimension = 8;
-        else boardDimension = 10;
-        System.out.println("board Dim: " + boardDimension);
 
         //if its a new game
         if(gameState == 1) {
+            final int boardDimension;
+
+            if (boardSize.equals("6X6")) boardDimension = 6;
+            else if (boardSize.equals("8X8")) boardDimension = 8;
+            else boardDimension = 10;
+            System.out.println("board Dim: " + boardDimension);
+
             gameBoard.setBoardDimension(boardDimension);
             gameBoard.newGame();
             initializeBoard();
@@ -91,7 +103,7 @@ public class MainActivity extends Activity {
             String fileName = (String) getIntent().getSerializableExtra("file");
             try{
                 if(isExternalStorageReadable()){
-                    String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/"+fileName;
+                    String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/savefiles/"+fileName;
                     InputStream is = new FileInputStream(path);
                     gameBoard.loadGame(is);
                     initializeBoard();
@@ -112,6 +124,32 @@ public class MainActivity extends Activity {
             TextView pl = findViewById(R.id.whiteplayer);
             pl.setBackgroundColor(Color.BLACK);
         }
+    }
+
+    boolean prune;
+    //On Click Listener for Pruning CheckBox
+    public void pruneCheckboxClicked( View view){
+        boolean checked = ((CheckBox) view).isChecked();
+        if (checked){
+            makeToast("You checked");
+            prune = true;
+        }
+
+        else {
+            makeToast("You unchecked");
+            prune = false;
+        }
+        gameBoard.setPrune(prune);
+    }
+
+    //On Click Listener for Go button
+    //takes the input from the player for the ply cut-off and passes it to the Board Class
+    public void goButton(View view){
+        EditText plyCutOff = findViewById(R.id.plyCutoff);
+        String value = plyCutOff.getText().toString();
+        int v = Integer.parseInt(value);
+        makeToast("Ply-Cutoff: " + v);
+        gameBoard.setPlyCutoff(v);
     }
 
     //Initialises the board, assigns values to the hashmap to communicate with the logic and view
@@ -139,7 +177,6 @@ public class MainActivity extends Activity {
         a.setLayoutParams(params);
 
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(width, height);
-
 
         for (int i = 0; i <= gameBoard.getBoardDimension(); i++){
             TextView label = new TextView(this);
@@ -382,141 +419,46 @@ public class MainActivity extends Activity {
     else
         prompt invalid press
      */
-    public void nextMove(View view) {
+
+    public void hintMove(View view) {
         nextMovePress++;
         //stop last animation;
         //if its second or higher press then stop animation
-        if (nextMovePress > 1 && getIdOfBtn(nextBtn)!=0 && getIdOfBtn(originBtn)!=0 && spinnerId != 2) {
-            ImageView nxt = findViewById(getIdOfBtn(nextBtn));
-            ImageView org = findViewById(getIdOfBtn(originBtn));
-            stopAnimation(org);
-            stopAnimation(nxt);
-        }
-        else if (nextMovePress > 1 && getIdOfBtn(nextBtn)!=0 && getIdOfBtn(originBtn)!=0 && spinnerId == 2){
+        if (nextMovePress > 1 && getIdOfBtn(nextBtn)!=0 && getIdOfBtn(originBtn)!=0){
             originBtn = gameBoard.fromThisButton;
             if (getIdOfBtn(originBtn)!=0) {
                 ImageView org = findViewById(getIdOfBtn(originBtn));
                 stopAnimation(org);
             }
 
-            //if (gameBoard.toTheseButtons.size()!=0) {
             for (int i = 0; i < gameBoard.toTheseButtons.size(); i++) {
                 nextBtn = gameBoard.toTheseButtons.get(i);
                 if (getIdOfBtn(nextBtn) != 0) {
                     ImageView nxt = findViewById(getIdOfBtn(nextBtn));
                     stopAnimation(nxt);
-                    // }
                 }
             }
         }
 
-        //if DFS chosen
-        if (spinnerId == 0) {
-            //if DFS tree is empty, then create tree
-            if (gameBoard.DFSvisitedNodes.isEmpty()){
-                gameBoard.DFS(0,0);
-            }
-            //get the next valid source and destination buttons from the search
-            gameBoard.getNextValidMove(0);
-            nextBtn = gameBoard.toThisButton;
-            originBtn = gameBoard.fromThisButton;
-            if (getIdOfBtn(nextBtn)!=0 && getIdOfBtn(originBtn)!=0) {
+        //if Best First Search tree is empty, create tree
+        if (gameBoard.BestFirstSearchList.isEmpty()){
+            gameBoard.BestFirstSearch();
+        }
+        //get the valid source and destination from the tree
+        gameBoard.getNextValidMove(2);
+        originBtn = gameBoard.fromThisButton;
+        if (getIdOfBtn(originBtn)!=0) {
+            ImageView org = findViewById(getIdOfBtn(originBtn));
+            animateButtons(org);
+        }
+        else makeToast("Best First Search processing...");
+
+        for (int i = 0; i < gameBoard.toTheseButtons.size(); i++){
+            nextBtn = gameBoard.toTheseButtons.get(i);
+            if (getIdOfBtn(nextBtn)!=0) {
                 ImageView nxt = findViewById(getIdOfBtn(nextBtn));
-                ImageView org = findViewById(getIdOfBtn(originBtn));
-                animateButtons(org);
                 animateButtons(nxt);
             }
-            else {
-                makeToast("DFS is processing, please wait.");
-            }
-        }
-
-        //if BFS chosen
-        else if (spinnerId == 1) {
-            //if BFS tree is empty then create tree
-            if (gameBoard.BFSvisitedNodes.isEmpty()){
-                gameBoard.BFS(0,0);
-            }
-            //get the valid source and destination from the tree
-            gameBoard.getNextValidMove(1);
-            nextBtn = gameBoard.toThisButton;
-            originBtn = gameBoard.fromThisButton;
-            if (getIdOfBtn(nextBtn)!=0 ) {
-                ImageView nxt = findViewById(getIdOfBtn(nextBtn));
-                ImageView org = findViewById(getIdOfBtn(originBtn));
-                animateButtons(org);
-                animateButtons(nxt);
-            }
-            else{
-                makeToast("BFS is processing, please wait.");
-            }
-        }
-
-        //if Best First Search chosen
-        else if (spinnerId == 2) {
-            //if Best First Search tree is empty, create tree
-            if (gameBoard.BestFirstSearchList.isEmpty()){
-                gameBoard.BestFirstSearch();
-            }
-            //get the valid source and destination from the tree
-            gameBoard.getNextValidMove(2);
-            originBtn = gameBoard.fromThisButton;
-            if (getIdOfBtn(originBtn)!=0) {
-                ImageView org = findViewById(getIdOfBtn(originBtn));
-                animateButtons(org);
-            }
-            else makeToast("Best First Search processing...");
-
-            for (int i = 0; i < gameBoard.toTheseButtons.size(); i++){
-                nextBtn = gameBoard.toTheseButtons.get(i);
-                if (getIdOfBtn(nextBtn)!=0) {
-                    ImageView nxt = findViewById(getIdOfBtn(nextBtn));
-                    animateButtons(nxt);
-                }
-            }
-            /*nextBtn = gameBoard.toThisButton;
-
-            if (getIdOfBtn(nextBtn)!=0&& getIdOfBtn(originBtn)!=0) {
-                ImageView nxt = findViewById(getIdOfBtn(nextBtn));
-                ImageView org = findViewById(getIdOfBtn(originBtn));
-                animateButtons(org, nxt);
-            }
-            else{*/
-            //    makeToast("Best First Search processing...");
-            //}
-        }
-
-        //Branch and Bound chosen
-        else if(spinnerId == 3){
-            //Branch and bound sets the source and destination buttons.
-
-            originBtn = gameBoard.fromThisButton;
-            if (getIdOfBtn(originBtn)!=0) {
-                ImageView org = findViewById(getIdOfBtn(originBtn));
-                animateButtons(org);
-            }
-
-            for (int i = 0; i < gameBoard.toTheseButtons.size(); i++){
-                nextBtn = gameBoard.toTheseButtons.get(i);
-                if (getIdOfBtn(nextBtn)!=0) {
-                    ImageView nxt = findViewById(getIdOfBtn(nextBtn));
-                    animateButtons(nxt);
-                }
-            }
-            //nextBtn = gameBoard.toThisButton;
-            /*if (getIdOfBtn(nextBtn)!=0 ) {
-                ImageView nxt = findViewById(getIdOfBtn(nextBtn));
-                ImageView org = findViewById(getIdOfBtn(originBtn));
-                animateButtons(org);
-                animateButtons(nxt);
-            }*/
-            int score = gameBoard.BnBscore;
-            makeToast("Score = +" + score);
-            //makeToast("Invalid Algorithm");
-        }
-
-        else {
-            makeToast("Invalid Press");
         }
     }
 
@@ -720,11 +662,19 @@ public class MainActivity extends Activity {
     catch
      */
     public void saveGame(View view){
-        String scoreString = "Black:\n" + gameBoard.getBlackScore()+"\n"+"\nWhite:\n"+gameBoard.getWhiteScore()+"\n";
-        String boardString = "\nBoard:\n";
+        String dimensionString = "Dimension:\n" + gameBoard.getBoardDimension() + "\n";
+        String scoreString = "Black:\n" + gameBoard.getBlackScore()+"\n"+"White:\n"+gameBoard.getWhiteScore()+"\n";
+        String turnString = "Next Player:\n";
+        boolean turn = gameBoard.getBlackTurn();
+        if(turn){
+            turnString+="Black\n";
+        }
+        else turnString+="White\n";
+
+        String boardString = "Board:\n";
         //write the layout
-        for(int i = 0; i < 6; i++){
-            for (int j = 0; j < 6; j++){
+        for(int i = 0; i < gameBoard.getBoardDimension(); i++){
+            for (int j = 0; j < gameBoard.getBoardDimension(); j++){
                 if (gameBoard.board[i][j].equals("E")) {
                     boardString+="E";
                     boardString+=" ";
@@ -741,15 +691,8 @@ public class MainActivity extends Activity {
         }
         boardString+="\n";
 
-        String turnString = "Next Player:\n";
-        boolean turn = gameBoard.getBlackTurn();
-        if(turn){
-            turnString+="Black\n";
-        }
-        else turnString+="White\n";
-
-        String writeString = scoreString+boardString+turnString;
-        //System.out.println(writeString);
+        String writeString = dimensionString+scoreString+turnString+boardString;
+        System.out.println(writeString);
         try{
             if(isExternalStorageWritable()){
                 File file = getFile();
@@ -762,6 +705,9 @@ public class MainActivity extends Activity {
         catch (IOException e){
             e.printStackTrace();
         }
+
+        finish();
+        System.exit(0);
     }
 
     //checks if the ExternalStorage is Writable or not
@@ -784,16 +730,41 @@ public class MainActivity extends Activity {
     //get file directory
     //write file into that directory
     //return the created file
+    //private File fileN;
     private File getFile(){
         int i = 1;
         while (true){
-            String fileName = "AI"+i+".txt";
-            String fileDir = Environment.getExternalStorageDirectory().getAbsolutePath()+"/"+fileName;
+            String fileName = "save"+i+".txt";
+            String fileDir = Environment.getExternalStorageDirectory().getAbsolutePath()+"/savefiles/"+fileName;
             File file = new File(fileDir);
             if(!file.exists()){
                 return file;
             }
             i++;
         }
+        //---set up the alert dialog---
+        /*AlertDialog.Builder prompt = new AlertDialog.Builder(this);
+        prompt.setTitle("Enter Name");
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+
+        prompt.setView(input);
+        prompt.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            private String fn;
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                fn = input.getText().toString();
+
+            }
+        });
+        prompt.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        prompt.show();
+        return fileN;*/
     }
 }

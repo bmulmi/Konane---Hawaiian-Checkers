@@ -84,9 +84,85 @@
                         android:gravity="top|center_horizontal"
                         android:textColor="@android:color/white"
                         android:textSize="30sp" />
+
                 </LinearLayout>
 
             </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/options"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/alphaBeta"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/checkBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:background="#bcbabc"
+                    android:checked="false"
+                    android:duplicateParentState="false"
+                    android:text="Alpha Beta Pruning"
+                    android:textAlignment="center"
+                    android:textColor="#000000"
+                    android:visibility="visible"
+                    android:onClick="pruneCheckboxClicked"/>
+
+                <TextView
+                    android:id="@+id/plyCutoffText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:background="#3a2035"
+                    android:paddingTop="3dp"
+                    android:text="Ply Cut-off :"
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:textSize="17sp"
+                    android:visibility="visible" />
+
+                <EditText
+                    android:id="@+id/plyCutoff"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ems="1"
+                    android:inputType="number"
+                    android:visibility="visible" />
+
+                <Button
+                    android:id="@+id/goButton"
+                    style="@android:style/Widget.Button"
+                    android:layout_width="30dp"
+                    android:layout_height="35dp"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:text="Go"
+                    android:textAlignment="center"
+                    android:textSize="13sp"
+                    android:onClick="goButton"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/log"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:background="#000000"
+                android:text="log: "
+                android:textColor="#FFFFFF"
+                android:visibility="visible" />
 
         </LinearLayout>
 
@@ -142,6 +218,7 @@
         android:layout_marginEnd="19dp"
         android:layout_marginRight="19dp"
         android:layout_marginTop="41dp"
+        android:gravity="fill_vertical"
         android:orientation="horizontal"
         android:visibility="visible">
 
@@ -149,7 +226,7 @@
             android:id="@+id/skip"
             style="@android:style/Widget.Holo.Button.Small"
             android:layout_width="125dp"
-            android:layout_height="50dp"
+            android:layout_height="40dp"
             android:layout_marginLeft="13dp"
             android:layout_marginStart="13dp"
             android:onClick="skipMove"
@@ -159,18 +236,18 @@
             android:id="@+id/save"
             style="@android:style/Widget.Button.Inset"
             android:layout_width="100dp"
-            android:layout_height="50dp"
+            android:layout_height="40dp"
             android:onClick="saveGame"
             android:text="Save Game" />
 
         <Button
-            android:id="@+id/next"
+            android:id="@+id/hint"
             style="@android:style/Widget.Holo.Button.Small"
             android:layout_width="125dp"
-            android:layout_height="50dp"
+            android:layout_height="40dp"
             android:layout_marginEnd="19dp"
             android:layout_marginRight="19dp"
-            android:onClick="nextMove"
+            android:onClick="hintMove"
             android:text="Hint"
             android:visibility="visible" />
 
