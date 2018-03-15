@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="edu.ramapo.bibhash.konane.view.MainActivity"
+    android:background="@android:color/holo_purple">
+
+    <LinearLayout
+        android:id="@+id/scoreLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/scoreLinearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/blackScoreVertical"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/blackplayer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:fontFamily="sans-serif-condensed"
+                        android:text="Black"
+                        android:textAlignment="center"
+                        android:textColor="#000000"
+                        android:textSize="35sp"
+                        android:textStyle="bold"
+                        android:visibility="visible" />
+
+                    <TextView
+                        android:id="@+id/player1score"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="top|center_horizontal"
+                        android:textColor="#000000"
+                        android:textSize="30sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/whiteScoreVertical"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/whiteplayer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-condensed"
+                        android:text="White"
+                        android:textAlignment="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="35sp"
+                        android:textStyle="bold"
+                        android:visibility="visible" />
+
+                    <TextView
+                        android:id="@+id/player2score"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="top|center_horizontal"
+                        android:textColor="@android:color/white"
+                        android:textSize="30sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/theBoard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/scoreLayout"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/rowsLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"></LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/columnsAndBoard"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/columnsLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+            </LinearLayout>
+
+            <GridLayout
+                android:id="@+id/konaneLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            </GridLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/buttonsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginEnd="19dp"
+        android:layout_marginRight="19dp"
+        android:layout_marginTop="41dp"
+        android:orientation="horizontal"
+        android:visibility="visible">
+
+        <Button
+            android:id="@+id/skip"
+            style="@android:style/Widget.Holo.Button.Small"
+            android:layout_width="125dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="13dp"
+            android:layout_marginStart="13dp"
+            android:onClick="skipMove"
+            android:text="Skip Move" />
+
+        <Button
+            android:id="@+id/save"
+            style="@android:style/Widget.Button.Inset"
+            android:layout_width="100dp"
+            android:layout_height="50dp"
+            android:onClick="saveGame"
+            android:text="Save Game" />
+
+        <Button
+            android:id="@+id/next"
+            style="@android:style/Widget.Holo.Button.Small"
+            android:layout_width="125dp"
+            android:layout_height="50dp"
+            android:layout_marginEnd="19dp"
+            android:layout_marginRight="19dp"
+            android:onClick="nextMove"
+            android:text="Hint"
+            android:visibility="visible" />
+
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Konane</string>
+    <string name="title_activity_main">Konane</string>
+    <string-array name="algorithms">
+        <item>Depth First Search</item>
+        <item>Breadth First Search</item>
+        <item>Best First Search</item>
+        <item>Branch and Bound Algorithm</item>
+    </string-array>
+    <string name="title_activity_end">Konane</string>
+</resources>

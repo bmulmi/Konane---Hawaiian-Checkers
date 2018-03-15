@@ -1,0 +1,4 @@
+3/9/2018:
+- added board size option to the startActivity.
+- initialized makeBoard function.
+- changed the initialiseBoard function. Now it dynamically assigns gridColumnCount and rowCount

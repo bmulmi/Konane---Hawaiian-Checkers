@@ -1,0 +1,3 @@
+3/14/2018:
+- generated the dynamic board array. 0.5Hrs
+- generated rowsLabel, columnsLabel and konaneLayout Dynamically. 2 Hrs
