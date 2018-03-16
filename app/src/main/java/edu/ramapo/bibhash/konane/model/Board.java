@@ -61,6 +61,7 @@ public class Board{
         whitePlayer.setTurn(false);
     }
 
+    //generates the board as an array of strings
     private void makeBoard(){
         int temp = boardDimension;
         board = new String[temp][temp];
@@ -144,6 +145,13 @@ public class Board{
         whitePlayer.setTurn(i);
     }
 
+    public void setBlackAsComputer(){ blackPlayer.setComputerPlays(true); whitePlayer.setComputerPlays(false);}
+
+    public void setWhiteAsComputer(){whitePlayer.setComputerPlays(true); blackPlayer.setComputerPlays(false);}
+
+    public boolean getIsBlackComputer (){return blackPlayer.isComputer();}
+
+    public boolean getIsWhiteComputer (){return whitePlayer.isComputer();}
     /*
     accepts InputStream parameter
     Loads the selected game file from State.java
@@ -155,14 +163,17 @@ public class Board{
         gameState.setInputStream(is);
 
         boardDimension = gameState.getDimension();
-        System.out.println(boardDimension);
+        //System.out.println(boardDimension);
         board = gameState.getBoard();
-        System.out.println(board);
+        //System.out.println(board);
         blackPlayer.setScore(gameState.getBlackScore());
         whitePlayer.setScore(gameState.getWhiteScore());
 
         blackPlayer.setTurn(gameState.getBlackTurn());
         whitePlayer.setTurn(gameState.getWhiteTurn());
+
+        blackPlayer.setComputerPlays(gameState.getBlackComputer());
+        whitePlayer.setComputerPlays(gameState.getWhiteComputer());
     }
     //randomly removes two buttons, set their imageResource to 0
     /*
@@ -179,6 +190,9 @@ public class Board{
 
     updateBoard[row][col]
     */
+
+    private Pair<Integer, Integer> removedBtn1;
+    private Pair<Integer, Integer> removedBtn2;
     public void removeButton() {
         Random rdm = new Random();
         int row, col;
@@ -187,13 +201,22 @@ public class Board{
             col = rdm.nextInt(boardDimension) % boardDimension;
         } while ((row % 2 == 1 || col % 2 == 1));
         //update the board array
+        removedBtn1 = new Pair(row, col);
         board[row][col] = empty;
         //row and col odd = white
         do {
             row = rdm.nextInt(boardDimension) % boardDimension;
             col = rdm.nextInt(boardDimension) % boardDimension;
         } while ((col % 2 == 0 && row % 2 == 0) || (col % 2 == 1 && row % 2 == 1));
+        removedBtn2 = new Pair<>(row, col);
         board[row][col] = empty;
+    }
+
+    public Pair<Integer, Integer>[] getRemovedBtns(){
+        Pair<Integer, Integer> [] temp = new Pair[2];
+        temp[0] = removedBtn1;
+        temp[1] = removedBtn2;
+        return temp;
     }
 
     //updateButton updates the board array once the move is made

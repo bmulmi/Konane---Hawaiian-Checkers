@@ -10,28 +10,18 @@ package edu.ramapo.bibhash.konane.view;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.app.Activity;
 import android.os.Environment;
-import android.preference.DialogPreference;
-import android.provider.Settings;
-import android.text.Editable;
-import android.text.InputType;
-import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Pair;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -41,8 +31,6 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RadioGroup;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,17 +52,15 @@ public class MainActivity extends Activity {
     private boolean successiveMove = false;
     private ImageView sourceClick;
     private ImageView destinationClick;
-    public long spinnerId;
     private Animation animation = new AlphaAnimation(1, 0);
     private ArrayAdapter<CharSequence> adapter;
-
     private HashMap<Integer, Pair<Integer, Integer>> key = new HashMap<>();
 
     private Board gameBoard = new Board();
 
     private int srcRow, srcCol, dstRow, dstCol;
-    @Override
 
+    @Override
     //check gameState and load game accordingly
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,6 +81,7 @@ public class MainActivity extends Activity {
             gameBoard.setBoardDimension(boardDimension);
             gameBoard.newGame();
             initializeBoard();
+            guessTheSlot();
             updateScoreView();
         }
 
@@ -108,6 +95,7 @@ public class MainActivity extends Activity {
                     gameBoard.loadGame(is);
                     initializeBoard();
                     updateScoreView();
+                    setScoreText(gameBoard.getIsBlackComputer(), gameBoard.getIsWhiteComputer());
                 }
             }
             catch (Exception e){
@@ -120,10 +108,65 @@ public class MainActivity extends Activity {
             TextView pl = findViewById(R.id.blackplayer);
             pl.setBackgroundColor(Color.WHITE);
         }
+
         else {
             TextView pl = findViewById(R.id.whiteplayer);
             pl.setBackgroundColor(Color.BLACK);
         }
+    }
+
+    public void guessTheSlot(){
+        Pair<Integer, Integer>[] temp = gameBoard.getRemovedBtns();
+        int rowb,colb,roww,colw;
+        rowb = temp[0].first+1;
+        colb = temp[0].second+1;
+        roww = temp[1].first+1;
+        colw = temp[1].second+1;
+        AlertDialog.Builder guess = new AlertDialog.Builder(this);
+        guess.setTitle("Guess the Removed Black Stone");
+        final String [] items = { rowb+"X"+colb, roww+"X"+colw};
+
+        guess.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                ListView select = ((AlertDialog)dialog).getListView();
+                String selected = (String) select.getAdapter().getItem(which);
+                if (selected.equals(items[0])) {
+                    makeToast("You guessed correctly.");
+                    gameBoard.setWhiteAsComputer();
+                    setScoreText(gameBoard.getIsBlackComputer(), gameBoard.getIsWhiteComputer());
+                }
+                else {
+                    makeToast("You guessed wrong.");
+                    gameBoard.setBlackAsComputer();
+                    setScoreText(gameBoard.getIsBlackComputer(), gameBoard.getIsWhiteComputer());
+                }
+            }
+        });
+        guess.show();
+    }
+
+    private void setScoreText(boolean black, boolean white){
+        TextView blackP = findViewById(R.id.blackplayer);
+        TextView whiteP = findViewById(R.id.whiteplayer);
+        //if black is computer
+        if(black && !white){
+            blackP.setText("Black\n(Computer)");
+            whiteP.setText("White\n(Human)");
+        }
+        else{
+            blackP.setText("Black\n(Human)");
+            whiteP.setText("White\n(Computer)");
+        }
+
+        TextView blackS = findViewById(R.id.player1score);
+        TextView whiteS = findViewById(R.id.player2score);
+
+        int width = getDrawableSizes()[0]/4;
+        blackP.setWidth(width);
+        whiteP.setWidth(width);
+        blackS.setWidth(width);
+        whiteS.setWidth(width);
     }
 
     boolean prune;
@@ -142,14 +185,20 @@ public class MainActivity extends Activity {
         gameBoard.setPrune(prune);
     }
 
-    //On Click Listener for Go button
+    //On Click Listener for ply Enter button
     //takes the input from the player for the ply cut-off and passes it to the Board Class
-    public void goButton(View view){
+    //also prompts the user the moves of computer by animation.
+    public void plyEnter(View view){
         EditText plyCutOff = findViewById(R.id.plyCutoff);
         String value = plyCutOff.getText().toString();
         int v = Integer.parseInt(value);
         makeToast("Ply-Cutoff: " + v);
         gameBoard.setPlyCutoff(v);
+    }
+
+    //let the computer make the move
+    public void goButton(View view){
+        makeToast("you pressed go.");
     }
 
     //Initialises the board, assigns values to the hashmap to communicate with the logic and view
@@ -251,28 +300,33 @@ public class MainActivity extends Activity {
                    @Override
                     public void onClick(View view){
                        click++;
-                       System.out.println("click: "+click);
+                       //System.out.println("click: "+click);
                        if (click == 1) {
                            sourceClick = (ImageView) view;
                            sourceClick.setBackgroundColor(Color.YELLOW);
 
                            int srcId = sourceClick.getId();
-                           makeToast("id: " + srcId);
+                           //makeToast("id: " + srcId);
+
                            Pair<Integer, Integer> sourceRowCol = key.get(srcId);
                            srcRow = sourceRowCol.first;
                            srcCol = sourceRowCol.second;
-                           System.out.println(srcRow+""+srcCol);
+                           //System.out.println(srcRow+""+srcCol);
 
-                           if (gameBoard.getBlackTurn() && !gameBoard.isBlack(srcRow,srcCol)){
-                               makeToast("WRONG STONE, press BLACK");
+                           //black stone's turn but black is computer
+                           if (gameBoard.getBlackTurn()  && gameBoard.getIsBlackComputer() && gameBoard.isBlack(srcRow,srcCol)){
+                               makeToast("WRONG STONE");
                                click = 0;
                                sourceClick.setBackgroundColor(0);
+                               clearBackground();
                            }
 
-                           if (gameBoard.getWhiteTurn() && !gameBoard.isWhite(srcRow, srcCol)){
-                               makeToast("WRONG STONE, press WHITE");
+                           //white stone's turn and white is computer
+                           if (gameBoard.getWhiteTurn() && gameBoard.getIsWhiteComputer() && gameBoard.isWhite(srcRow, srcCol) ){
+                               makeToast("WRONG STONE");
                                click = 0;
                                sourceClick.setBackgroundColor(0);
+                               clearBackground();
                            }
                        }
 
@@ -663,13 +717,23 @@ public class MainActivity extends Activity {
      */
     public void saveGame(View view){
         String dimensionString = "Dimension:\n" + gameBoard.getBoardDimension() + "\n";
+
         String scoreString = "Black:\n" + gameBoard.getBlackScore()+"\n"+"White:\n"+gameBoard.getWhiteScore()+"\n";
+
         String turnString = "Next Player:\n";
         boolean turn = gameBoard.getBlackTurn();
         if(turn){
             turnString+="Black\n";
         }
         else turnString+="White\n";
+
+        String humanString = "Human:\n";
+        if (gameBoard.getIsBlackComputer()){
+            humanString+="White\n";
+        }
+        else{
+            humanString+="Black\n";
+        }
 
         String boardString = "Board:\n";
         //write the layout
@@ -691,7 +755,7 @@ public class MainActivity extends Activity {
         }
         boardString+="\n";
 
-        String writeString = dimensionString+scoreString+turnString+boardString;
+        String writeString = dimensionString + scoreString + turnString + humanString + boardString;
         System.out.println(writeString);
         try{
             if(isExternalStorageWritable()){

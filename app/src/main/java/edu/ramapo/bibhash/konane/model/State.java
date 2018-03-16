@@ -24,6 +24,8 @@ public class State {
     private int whiteScore;
     private boolean blackTurn;
     private boolean whiteTurn;
+    private boolean isBlackComputer;
+    private boolean isWhiteComputer;
     private String [][] board;
 
     public State(){
@@ -78,6 +80,18 @@ public class State {
     }
 
     /*
+    parameters passed boolean
+    sets isBlackComputer as boolean passed
+     */
+    private void setBlackComputer(boolean val){ isBlackComputer = val;}
+
+    /*
+    parameters passed boolean
+    sets isWhiteComputer as boolean passed
+     */
+    private void setWhiteComputer(boolean val){ isWhiteComputer = val;}
+
+    /*
     parameters passed String
     split string according to spaces \\s
     write the string into the board array accordingly
@@ -112,6 +126,10 @@ public class State {
     public boolean getWhiteTurn(){
         return whiteTurn;
     }
+    //return black is computer
+    public boolean getBlackComputer(){return isBlackComputer;}
+    //return white is computer
+    public boolean getWhiteComputer(){return isWhiteComputer;}
     //returns board array
     public String[][] getBoard(){
         return board;
@@ -131,6 +149,7 @@ public class State {
         catch (IOException e){
             e.printStackTrace();
         }
+
         setDimension(textRead[1].trim());
         setBlackScore(textRead[3].trim());
         setWhiteScore(textRead[5].trim());
@@ -143,6 +162,17 @@ public class State {
             setWhiteTurn(false);
             setBlackTurn(true);
         }
-        setBoard(textRead[9]);
+
+        String human = textRead[9].trim();
+        if(human.toLowerCase().equals("white")){
+            setBlackComputer(true);
+            setWhiteComputer(false);
+        }
+        else{
+            setBlackComputer(false);
+            setWhiteComputer(true);
+        }
+
+        setBoard(textRead[11]);
     }
 }

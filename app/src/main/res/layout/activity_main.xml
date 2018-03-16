@@ -36,10 +36,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:fontFamily="sans-serif-condensed"
-                        android:text="Black"
+                        android:text="black\nscore"
                         android:textAlignment="center"
                         android:textColor="#000000"
-                        android:textSize="35sp"
+                        android:textSize="17sp"
                         android:textStyle="bold"
                         android:visibility="visible" />
 
@@ -48,8 +48,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:gravity="top|center_horizontal"
+                        android:textAlignment="center"
                         android:textColor="#000000"
-                        android:textSize="30sp" />
+                        android:textSize="20sp" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -62,28 +63,29 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
                     <TextView
                         android:id="@+id/whiteplayer"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:fontFamily="sans-serif-condensed"
-                        android:text="White"
+                        android:text="white\nscore"
                         android:textAlignment="center"
                         android:textColor="#FFFFFF"
-                        android:textSize="35sp"
+                        android:textSize="17sp"
                         android:textStyle="bold"
                         android:visibility="visible" />
 
                     <TextView
                         android:id="@+id/player2score"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:gravity="top|center_horizontal"
                         android:textColor="@android:color/white"
-                        android:textSize="30sp" />
+                        android:textAlignment="center"
+                        android:textSize="20sp" />
 
                 </LinearLayout>
 
@@ -101,7 +103,7 @@
             <LinearLayout
                 android:id="@+id/alphaBeta"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="25dp"
                 android:orientation="horizontal">
 
                 <CheckBox
@@ -113,11 +115,11 @@
                     android:background="#bcbabc"
                     android:checked="false"
                     android:duplicateParentState="false"
+                    android:onClick="pruneCheckboxClicked"
                     android:text="Alpha Beta Pruning"
                     android:textAlignment="center"
                     android:textColor="#000000"
-                    android:visibility="visible"
-                    android:onClick="pruneCheckboxClicked"/>
+                    android:visibility="visible" />
 
                 <TextView
                     android:id="@+id/plyCutoffText"
@@ -143,16 +145,16 @@
                     android:visibility="visible" />
 
                 <Button
-                    android:id="@+id/goButton"
+                    android:id="@+id/plyEnter"
                     style="@android:style/Widget.Button"
                     android:layout_width="30dp"
                     android:layout_height="35dp"
                     android:layout_gravity="center"
                     android:layout_weight="1"
-                    android:text="Go"
+                    android:onClick="plyEnter"
+                    android:text="enter"
                     android:textAlignment="center"
-                    android:textSize="13sp"
-                    android:onClick="goButton"/>
+                    android:textSize="9sp" />
             </LinearLayout>
 
             <TextView
@@ -218,14 +220,24 @@
         android:layout_marginEnd="19dp"
         android:layout_marginRight="19dp"
         android:layout_marginTop="41dp"
-        android:gravity="fill_vertical"
+        android:gravity="fill_vertical|center"
         android:orientation="horizontal"
         android:visibility="visible">
 
         <Button
+            android:id="@+id/goButton"
+            style="@android:style/Widget.DeviceDefault.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginLeft="13dp"
+            android:layout_weight="1"
+            android:onClick="goButton"
+            android:text="Go" />
+
+        <Button
             android:id="@+id/skip"
             style="@android:style/Widget.Holo.Button.Small"
-            android:layout_width="125dp"
+            android:layout_width="90dp"
             android:layout_height="40dp"
             android:layout_marginLeft="13dp"
             android:layout_marginStart="13dp"
@@ -233,23 +245,23 @@
             android:text="Skip Move" />
 
         <Button
+            android:id="@+id/hint"
+            style="@android:style/Widget.Holo.Button.Small"
+            android:layout_width="90dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="13dp"
+            android:layout_marginRight="13dp"
+            android:onClick="hintMove"
+            android:text="Hint Move"
+            android:visibility="visible" />
+
+        <Button
             android:id="@+id/save"
             style="@android:style/Widget.Button.Inset"
-            android:layout_width="100dp"
+            android:layout_width="90dp"
             android:layout_height="40dp"
             android:onClick="saveGame"
             android:text="Save Game" />
-
-        <Button
-            android:id="@+id/hint"
-            style="@android:style/Widget.Holo.Button.Small"
-            android:layout_width="125dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="19dp"
-            android:layout_marginRight="19dp"
-            android:onClick="hintMove"
-            android:text="Hint"
-            android:visibility="visible" />
 
     </LinearLayout>
 

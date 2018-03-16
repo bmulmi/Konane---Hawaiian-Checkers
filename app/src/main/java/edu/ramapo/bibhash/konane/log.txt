@@ -8,4 +8,7 @@
 - added plyCutoff option with editText widget and a go button. 1 Hr
 - added BoardDimension to Serialized File. 0.5 Hrs
 - successfully saves and loads game. 0.5 Hrs
-- 
+
+3/16/2018:
+- added private boolean computerPlays to the player class to set the stone's player as computer(true) or human(false)
+-
