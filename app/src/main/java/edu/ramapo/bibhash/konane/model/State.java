@@ -101,6 +101,9 @@ public class State {
         board = new String[dimension][dimension];
         String[] splitStr = str.split("\\s+");
         int h = 0;
+        while(text!=null){
+
+        }
         for (int i = 0; i < dimension; i++){
             for (int j = 0; j < dimension; j++){
                 board[i][j] = splitStr[h++];

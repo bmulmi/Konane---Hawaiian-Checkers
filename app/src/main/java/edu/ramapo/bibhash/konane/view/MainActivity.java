@@ -45,6 +45,7 @@ import java.util.Map;
 
 import edu.ramapo.bibhash.konane.R;
 import edu.ramapo.bibhash.konane.model.Board;
+import edu.ramapo.bibhash.konane.model.Move;
 
 
 public class MainActivity extends Activity {
@@ -169,37 +170,64 @@ public class MainActivity extends Activity {
         whiteS.setWidth(width);
     }
 
-    boolean prune;
+    private boolean prune;
     //On Click Listener for Pruning CheckBox
     public void pruneCheckboxClicked( View view){
         boolean checked = ((CheckBox) view).isChecked();
         if (checked){
-            makeToast("You checked");
+            //makeToast("You checked");
             prune = true;
         }
 
         else {
-            makeToast("You unchecked");
+            //makeToast("You unchecked");
             prune = false;
         }
-        gameBoard.setPrune(prune);
+        //gameBoard.setPrune(prune);
     }
 
+    private int plyCutOff;
     //On Click Listener for ply Enter button
     //takes the input from the player for the ply cut-off and passes it to the Board Class
     //also prompts the user the moves of computer by animation.
     public void plyEnter(View view){
-        EditText plyCutOff = findViewById(R.id.plyCutoff);
-        String value = plyCutOff.getText().toString();
+        EditText cutOff = findViewById(R.id.plyCutoff);
+        String value = cutOff.getText().toString();
         int v = Integer.parseInt(value);
-        makeToast("Ply-Cutoff: " + v);
-        gameBoard.setPlyCutoff(v);
+        plyCutOff = v;
+        //gameBoard.setPlyCutoff(v);
+        if ((gameBoard.getBlackTurn() && gameBoard.getIsBlackComputer()) || (gameBoard.getWhiteTurn() && gameBoard.getIsWhiteComputer())) {
+            gameBoard.getComputerMoves(plyCutOff, prune);
+            makeToast("Ply-Cutoff: " + v);
+
+            Move temp = gameBoard.bestMove;
+            ImageView tmp = findViewById(temp.row*10+temp.col);
+            animateButtons(tmp);
+        }
+        else makeToast("ply Cut-off entered for human.");
     }
 
     //let the computer make the move
     public void goButton(View view){
-        makeToast("you pressed go.");
+        if ((gameBoard.getBlackTurn() && gameBoard.getIsBlackComputer()) || (gameBoard.getWhiteTurn() && gameBoard.getIsWhiteComputer())) {
+            gameBoard.getComputerMoves(plyCutOff, prune);
+        }
+        else makeToast("Its your turn.");
+        //makeToast("you pressed go.");
+
     }
+
+    public void hintMove(View view) {
+        if ((gameBoard.getBlackTurn() && gameBoard.getIsWhiteComputer()) || (gameBoard.getWhiteTurn() && gameBoard.getIsBlackComputer())) {
+            gameBoard.getHumanMoves(plyCutOff, prune);
+        }
+        else makeToast("Its Computer's turn.");
+
+        Move temp = gameBoard.bestMove;
+        ImageView tmp = findViewById(temp.row*10+temp.col);
+        animateButtons(tmp);
+    }
+
 
     //Initialises the board, assigns values to the hashmap to communicate with the logic and view
     //Grid Layout assigns its child rows or columns with integer value that increases as we move to next row or col
@@ -424,9 +452,10 @@ public class MainActivity extends Activity {
         return 0;
     }
 
-    private int nextMovePress = 0;
-    private Pair<Integer,Integer> nextBtn;
-    private Pair<Integer,Integer> originBtn;
+
+    //private int nextMovePress = 0;
+    //private Pair<Integer,Integer> nextBtn;
+    //private Pair<Integer,Integer> originBtn;
 
 
     //on click listener for Next move button
@@ -474,7 +503,9 @@ public class MainActivity extends Activity {
         prompt invalid press
      */
 
-    public void hintMove(View view) {
+
+
+        /*
         nextMovePress++;
         //stop last animation;
         //if its second or higher press then stop animation
@@ -513,8 +544,8 @@ public class MainActivity extends Activity {
                 ImageView nxt = findViewById(getIdOfBtn(nextBtn));
                 animateButtons(nxt);
             }
-        }
-    }
+        }*/
+
 
     //animates the buttons
     //parameters passed ImageView object
@@ -681,7 +712,7 @@ public class MainActivity extends Activity {
         myBtn.setImageResource(R.drawable.empty);
 
         //clear the queues after the move is made
-        gameBoard.clearQueues();
+        //gameBoard.clearQueues();
         //clear background of buttons selected
         clearBackground();
         /*for (int i = 0; i<gameBoard.board.length; i++){
