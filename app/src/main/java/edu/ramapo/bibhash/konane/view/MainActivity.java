@@ -23,9 +23,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageView;
@@ -42,6 +40,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Stack;
 
 import edu.ramapo.bibhash.konane.R;
 import edu.ramapo.bibhash.konane.model.Board;
@@ -73,11 +73,10 @@ public class MainActivity extends Activity {
         //if its a new game
         if(gameState == 1) {
             final int boardDimension;
-
             if (boardSize.equals("6X6")) boardDimension = 6;
             else if (boardSize.equals("8X8")) boardDimension = 8;
             else boardDimension = 10;
-            System.out.println("board Dim: " + boardDimension);
+            //System.out.println("board Dim: " + boardDimension);
 
             gameBoard.setBoardDimension(boardDimension);
             gameBoard.newGame();
@@ -191,41 +190,116 @@ public class MainActivity extends Activity {
     //takes the input from the player for the ply cut-off and passes it to the Board Class
     //also prompts the user the moves of computer by animation.
     public void plyEnter(View view){
+
         EditText cutOff = findViewById(R.id.plyCutoff);
         String value = cutOff.getText().toString();
-        int v = Integer.parseInt(value);
-        plyCutOff = v;
-        //gameBoard.setPlyCutoff(v);
-        if ((gameBoard.getBlackTurn() && gameBoard.getIsBlackComputer()) || (gameBoard.getWhiteTurn() && gameBoard.getIsWhiteComputer())) {
-            gameBoard.getComputerMoves(plyCutOff, prune);
-            makeToast("Ply-Cutoff: " + v);
-
-            Move temp = gameBoard.bestMove;
-            ImageView tmp = findViewById(temp.row*10+temp.col);
-            animateButtons(tmp);
+        //no value entered
+        if (value.equals("")){
+            makeToast("Enter A Value");
         }
-        else makeToast("ply Cut-off entered for human.");
+        //value entered
+        else {
+            int v = Integer.parseInt(value);
+            plyCutOff = v;
+            //Computer's turn
+            if ((gameBoard.getBlackTurn() && gameBoard.getIsBlackComputer()) || (gameBoard.getWhiteTurn() && gameBoard.getIsWhiteComputer())) {
+                makeToast("Ply entered: " +v);
+                gameBoard.getMinimaxMoves(plyCutOff, prune, true);
+                //---bestMove is updated---
+                //---get the source---
+                Pair<Move, Move> temp = gameBoard.bestMove;
+                int sourceRow = temp.first.row;
+                int sourceCol = temp.first.col;
+                int tempId = sourceRow * 10 + sourceCol;
+                ImageView btn = findViewById(tempId);
+                animateButtons(btn);
+                //---get the destinations---
+                Stack<Pair<Integer, Integer>> jumps = gameBoard.getPath(temp.first, temp.second);
+                //---animate every one of them---
+                while (!jumps.isEmpty()) {
+                    Pair<Integer, Integer> j = jumps.pop();
+                    tempId = j.first * 10 + j.second;
+                    btn = findViewById(tempId);
+                    animateButtons(btn);
+                }
+            }
+            //human's turn
+            else makeToast("ply Cut-off: " + v + " entered for human.");
+        }
     }
 
     //let the computer make the move
     public void goButton(View view){
+        System.out.println("black: " + gameBoard.getBlackTurn());
         if ((gameBoard.getBlackTurn() && gameBoard.getIsBlackComputer()) || (gameBoard.getWhiteTurn() && gameBoard.getIsWhiteComputer())) {
-            gameBoard.getComputerMoves(plyCutOff, prune);
+            //computer's turn and same player is computer
+            Pair<Move, Move> temp = gameBoard.bestMove;
+            int sourceRow = temp.first.row;
+            int sourceCol = temp.first.col;
+            int tempId = sourceRow * 10 + sourceCol;
+            ImageView sourceBtn = findViewById(tempId);
+            //---get the destinations---
+            Stack<Pair<Integer, Integer>> jumps = gameBoard.getPath(temp.first, temp.second);
+            int score = 0;
+            //---animate every one of them---
+            while (!jumps.isEmpty()) {
+                score++;
+                Pair<Integer, Integer> j = jumps.pop();
+                tempId = j.first * 10 + j.second;
+                ImageView destnationBtn = findViewById(tempId);
+                makeMove(sourceBtn, destnationBtn);
+                sourceBtn = destnationBtn;
+            }
+            //---update the score---
+            if (gameBoard.getBlackTurn()) gameBoard.updateBlackScoreComputer(score);
+            else gameBoard.updateWhiteScoreComputer(score);
+            updateScoreView();
+            //---after it makes all the moves---change players---
+            changePlayer();
+            //---check if the next player has remaining moves---
+            //---if not change player again---
+            if((gameBoard.getWhiteTurn()) && !gameBoard.checkRemainingMovesForWhite()){
+                changePlayer();
+                makeToast("No remaining moves White");
+            }
+            if((gameBoard.getBlackTurn() && !gameBoard.checkRemainingMovesForBlack())){
+                changePlayer();
+                makeToast("No remaining moves Black");
+            }
+            if(!gameBoard.checkRemainingMovesForBlack() && !gameBoard.checkRemainingMovesForWhite()){
+                declareWinner();
+            }
         }
         else makeToast("Its your turn.");
         //makeToast("you pressed go.");
-
     }
 
     public void hintMove(View view) {
-        if ((gameBoard.getBlackTurn() && gameBoard.getIsWhiteComputer()) || (gameBoard.getWhiteTurn() && gameBoard.getIsBlackComputer())) {
-            gameBoard.getHumanMoves(plyCutOff, prune);
-        }
-        else makeToast("Its Computer's turn.");
+        System.out.println("black: " + gameBoard.getBlackTurn());
 
-        Move temp = gameBoard.bestMove;
-        ImageView tmp = findViewById(temp.row*10+temp.col);
-        animateButtons(tmp);
+        //human's turn
+        if ((gameBoard.getBlackTurn() && gameBoard.getIsWhiteComputer()) || (gameBoard.getWhiteTurn() && gameBoard.getIsBlackComputer())) {
+            gameBoard.getMinimaxMoves(plyCutOff, prune, false);
+            //---bestMove is updated---
+            //---get the source---
+            Pair<Move, Move> temp = gameBoard.bestMove;
+            int sourceRow = temp.first.row;
+            int sourceCol = temp.first.col;
+            int tempId = sourceRow*10+sourceCol;
+            ImageView btn = findViewById(tempId);
+            animateButtons(btn);
+            //---get the destinations---
+            Stack<Pair<Integer, Integer>> jumps = gameBoard.getPath(temp.first, temp.second);
+            //---animate every one of them---
+            while (!jumps.isEmpty()) {
+                Pair<Integer, Integer> j = jumps.pop();
+                tempId = j.first * 10 + j.second;
+                btn = findViewById(tempId);
+                animateButtons(btn);
+            }
+        }
+        //computer's turn
+        else makeToast("Its Computer's turn!");
     }
 
 
@@ -240,12 +314,12 @@ public class MainActivity extends Activity {
     //assign the buttonId to HashMap (id, Pair<>(i,j));
     private void initializeBoard() {
         //---set row count labels---
-        System.out.println(getDrawableSizes()[0]);
-        System.out.println(getDrawableSizes()[1]);
+        /*System.out.println(getDrawableSizes()[0]);
+        System.out.println(getDrawableSizes()[1]);*/
         int width = (getDrawableSizes()[0])/(gameBoard.getBoardDimension()+1);
         int height = (getDrawableSizes()[0])/(gameBoard.getBoardDimension()+1);
-        System.out.println(width);
-        System.out.println(height);
+        /*System.out.println(width);
+        System.out.println(height);*/
 
         LinearLayout rowLayout = findViewById(R.id.rowsLabel);
         LinearLayout a = new LinearLayout(this);
@@ -366,16 +440,16 @@ public class MainActivity extends Activity {
                            Pair<Integer, Integer> destinationRowCol = key.get(dstId);
                            dstRow = destinationRowCol.first;
                            dstCol = destinationRowCol.second;
-
+                           //---make move only if its a valid move---
                            if (gameBoard.isEmptyStone(dstRow, dstCol) && gameBoard.isValid(srcRow, srcCol, dstRow, dstCol)) {
                                makeMove(sourceClick, destinationClick);
                                sourceClick.setBackgroundColor(0);
                                destinationClick.setBackgroundColor(0);
-
+                               //---update scores accordingly---
                                if (gameBoard.getBlackTurn()) gameBoard.updateBlackScore();
                                else gameBoard.updateWhiteScore();
                                updateScoreView();
-
+                               //---check for valid next moves---
                                if (gameBoard.isValidNextMove(dstRow, dstCol)) {
                                    //samePlayer moves with the destination now being source
                                    click = 1;
@@ -384,7 +458,10 @@ public class MainActivity extends Activity {
                                    srcCol = dstCol;
                                    successiveMove = true;
 
-                               } else {
+                               }
+                               //---no valid next move---
+                               else {
+                                   //change player
                                    successiveMove = false;
                                    click = 0;
                                    changePlayer();
@@ -441,6 +518,7 @@ public class MainActivity extends Activity {
         Drawable d = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true));
         */
     }
+
     //parameters used: Pair<integer, integer>
     //returns the integer Id of the Pair button associated with the grid layout
     private int getIdOfBtn(Pair<Integer, Integer> pair){
@@ -451,101 +529,6 @@ public class MainActivity extends Activity {
         }
         return 0;
     }
-
-
-    //private int nextMovePress = 0;
-    //private Pair<Integer,Integer> nextBtn;
-    //private Pair<Integer,Integer> originBtn;
-
-
-    //on click listener for Next move button
-    /*
-    if (nextMovePress is greater than 1 and user chose DFS or BFS)
-        stop previous animations of origin and destination buttons
-    else if (nextMovePress is greater than 1 and user chose Best First Search)
-        stop previous animation of origin button
-        for ( i<size of the list of destination buttons)
-            stop animation of the button at i
-
-    if (DFS chosen)
-        if (DFS List isEmpty()) initialise DFS tree;
-        gameBoard.getNextValidMove for DFS
-        nextBtn = gameBoard.toThisButton;
-        originBtn = gameBoard.fromThisButton;
-            if (nextBtn or originBtn id is not null)
-                animate buttons;
-    else if (BFS chosen)
-        if (BFS List isEmpty()) initialise BFS tree;
-        gameBoard.getNextValidMove for BFS
-        nextBtn = gameBoard.toThisButton;
-        originBtn = gameBoard.fromThisButton;
-            if (nextBtn or originBtn id is not null)
-                animate buttons;
-
-    else if (BestFirstSearch chosen)
-        if (BestFirstSearchList isEmpty()) initialise BestFirstSearch() and get the list;
-
-        gameBoard.getNextValidMove for Best First Search;
-        originBtn = gameBoard.fromThisButton;
-
-        if (originBtn id is not null) animate origin button;
-        for (int i = 0; i < size of the list of destination buttons; i++)
-            nextBtn = gameBoard.toTheseButtons.get(i);
-            if (nextBtn id is not null) animate next button;
-
-    else if (Branch and Bound chosen) Note: BranchAndBound function already called when selected in spinner
-         nextBtn = gameBoard.toThisButton;
-         originBtn = gameBoard.fromThisButton;
-         if (nextBtn id is not null) animate buttons origin and next;
-         int score = gameBoard.BnBscore;
-         makeToast("Score = +" + score);
-    else
-        prompt invalid press
-     */
-
-
-
-        /*
-        nextMovePress++;
-        //stop last animation;
-        //if its second or higher press then stop animation
-        if (nextMovePress > 1 && getIdOfBtn(nextBtn)!=0 && getIdOfBtn(originBtn)!=0){
-            originBtn = gameBoard.fromThisButton;
-            if (getIdOfBtn(originBtn)!=0) {
-                ImageView org = findViewById(getIdOfBtn(originBtn));
-                stopAnimation(org);
-            }
-
-            for (int i = 0; i < gameBoard.toTheseButtons.size(); i++) {
-                nextBtn = gameBoard.toTheseButtons.get(i);
-                if (getIdOfBtn(nextBtn) != 0) {
-                    ImageView nxt = findViewById(getIdOfBtn(nextBtn));
-                    stopAnimation(nxt);
-                }
-            }
-        }
-
-        //if Best First Search tree is empty, create tree
-        if (gameBoard.BestFirstSearchList.isEmpty()){
-            gameBoard.BestFirstSearch();
-        }
-        //get the valid source and destination from the tree
-        gameBoard.getNextValidMove(2);
-        originBtn = gameBoard.fromThisButton;
-        if (getIdOfBtn(originBtn)!=0) {
-            ImageView org = findViewById(getIdOfBtn(originBtn));
-            animateButtons(org);
-        }
-        else makeToast("Best First Search processing...");
-
-        for (int i = 0; i < gameBoard.toTheseButtons.size(); i++){
-            nextBtn = gameBoard.toTheseButtons.get(i);
-            if (getIdOfBtn(nextBtn)!=0) {
-                ImageView nxt = findViewById(getIdOfBtn(nextBtn));
-                animateButtons(nxt);
-            }
-        }*/
-
 
     //animates the buttons
     //parameters passed ImageView object
@@ -582,52 +565,6 @@ public class MainActivity extends Activity {
         source.clearAnimation();
         source.setBackgroundColor(0);
     }
-    /*private void stopAnimation(ImageView source, ImageView destination){
-        destination.setBackgroundColor(0);
-        source.setBackgroundColor(0);
-    }*/
-
-    /*
-    int click increases every time respond is called.
-    if (click == 1)
-        if(player1's turn)
-        set sourceClick;
-            if (sourceClicked is white or is empty) prompt "wrong stone", reset click = 0;
-        if(player2's turn)
-        set sourceClick;
-            if(sourceClicked is black or is empty) prompt "wrong stone", reset click = 0;
-
-     if (click == 2)
-        set destinationClick;
-
-        dstRow = destination row coordinate;
-        dstCol = destination column coordinate;
-
-        if (destination is empty slot and is a valid move)
-            makeMove;
-            update corresponding player score;
-                if (has next valid move)
-                    click = 1;
-                    sourceClick = destinationClick;
-                    srcRow = dstRow;
-                    srcCol = dstCol;
-                    successiveMove = true;
-                else
-                    successiveMove = false;
-                    click = 0;
-                    changePlayer();
-                    if (no remaining moves for the current player)
-                        prompt no remaining moves
-                    if (no remaining moves for both black and white)
-                        declare winner;
-            else
-                if (successiveMove)
-                    click = 1;
-                else
-                    click = 0 ;
-            }
-    */
-
 
     //changes the player
     //resets the click
@@ -662,11 +599,15 @@ public class MainActivity extends Activity {
         if (gameBoard.getBlackTurn()) {
             gameBoard.setBlackTurn(false);
             pl1.setBackgroundColor(0);
+
             gameBoard.setWhiteTurn(true);
             pl2.setBackgroundColor(Color.BLACK);
-        } else {
+        }
+
+        else {
             gameBoard.setBlackTurn(true);
             pl1.setBackgroundColor(Color.WHITE);
+
             gameBoard.setWhiteTurn(false);
             pl2.setBackgroundColor(0);
         }
@@ -747,7 +688,7 @@ public class MainActivity extends Activity {
     catch
      */
     public void saveGame(View view){
-        String dimensionString = "Dimension:\n" + gameBoard.getBoardDimension() + "\n";
+        //String dimensionString = "Dimension:\n" + gameBoard.getBoardDimension() + "\n";
 
         String scoreString = "Black:\n" + gameBoard.getBlackScore()+"\n"+"White:\n"+gameBoard.getWhiteScore()+"\n";
 
@@ -786,7 +727,8 @@ public class MainActivity extends Activity {
         }
         boardString+="\n";
 
-        String writeString = dimensionString + scoreString + turnString + humanString + boardString;
+        //String writeString = dimensionString + scoreString + turnString + humanString + boardString;
+        String writeString = scoreString + turnString + humanString + boardString;
         System.out.println(writeString);
         try{
             if(isExternalStorageWritable()){

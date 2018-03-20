@@ -28,22 +28,29 @@ public class Board{
     private Player blackPlayer = new Player();
     private Player whitePlayer = new Player();
     private State gameState = new State();
-/*
-    public Queue<Pair<Integer,Integer>> DFSvisitedNodes = new LinkedList<>();
-    public Queue<Pair<Integer,Integer>> BFSvisitedNodes = new LinkedList<>();
-    public Queue<Pair<Integer, Integer>> BestFirstSearchList = new LinkedList<>();*/
-
-    //public Map<Pair<Integer, Integer>, Stack<Pair<Integer, Integer>>> nMoves= new HashMap();
-
-    public Pair<Integer, Integer> fromThisButton;
-    /*public Pair<Integer, Integer> toThisButton;*/
-    public ArrayList<Pair<Integer, Integer>> toTheseButtons;
+    private Move move = new Move(-1,-1);
+    private Game game = new Game();
 
     public String white = "W";
     public String black = "B";
     public String empty = "E";
 
-    private Game game = new Game();
+    private boolean blackIsComputer = false;
+    private boolean whiteIsComputer = false;
+
+    /*
+    public Queue<Pair<Integer,Integer>> DFSvisitedNodes = new LinkedList<>();
+    public Queue<Pair<Integer,Integer>> BFSvisitedNodes = new LinkedList<>();
+    public Queue<Pair<Integer, Integer>> BestFirstSearchList = new LinkedList<>();
+
+    //public Map<Pair<Integer, Integer>, Stack<Pair<Integer, Integer>>> nMoves= new HashMap();
+
+    public Pair<Integer, Integer> fromThisButton;
+    public Pair<Integer, Integer> toThisButton;
+    public ArrayList<Pair<Integer, Integer>> toTheseButtons;
+    */
+
+
 
     public void setBoardDimension(int dimension){
         boardDimension = dimension;
@@ -98,6 +105,8 @@ public class Board{
         return whitePlayer.getScore();
     }
 
+    public void updateBlackScoreComputer(int val){blackPlayer.updateScoreComputer(val);}
+    public void updateWhiteScoreComputer(int val){whitePlayer.updateScoreComputer(val);}
     /*
     sets the score of the Black Stone from Player Class
      */
@@ -143,8 +152,7 @@ public class Board{
     public void setWhiteTurn(boolean i){
         whitePlayer.setTurn(i);
     }
-    private boolean blackIsComputer = false;
-    private boolean whiteIsComputer = false;
+
     public void setBlackAsComputer(){ blackIsComputer = true; blackPlayer.setComputerPlays(true); whitePlayer.setComputerPlays(false);}
 
     public void setWhiteAsComputer(){ whiteIsComputer = true; whitePlayer.setComputerPlays(true); blackPlayer.setComputerPlays(false);}
@@ -163,9 +171,10 @@ public class Board{
         gameState.setInputStream(is);
 
         boardDimension = gameState.getDimension();
-        //System.out.println(boardDimension);
+        //set up the board
         board = gameState.getBoard();
-        //System.out.println(board);
+
+        //set player class values
         blackPlayer.setScore(gameState.getBlackScore());
         whitePlayer.setScore(gameState.getWhiteScore());
 
@@ -175,8 +184,11 @@ public class Board{
         blackPlayer.setComputerPlays(gameState.getBlackComputer());
         whitePlayer.setComputerPlays(gameState.getWhiteComputer());
 
-        if (getIsBlackComputer()) blackIsComputer = true;
-        else whiteIsComputer = true;
+
+        if (getIsBlackComputer()){
+            setBlackAsComputer();
+        }
+        else setWhiteAsComputer();
     }
     //randomly removes two buttons, set their imageResource to 0
     /*
@@ -375,75 +387,74 @@ public class Board{
         return (r >= 0 && r <boardDimension && c >= 0 && c <boardDimension);
     }
 
-    public void getHumanMoves(int cutOff, boolean prune){
-
-        //getNextChild(board, false);
-        //getAllAvailableMoves(board, false);
-        getMinimaxMoves(cutOff, prune, false);
-    }
-
-    public void getComputerMoves(int cutOff, boolean prune){
-
-        //getNextChild(board, true);
-        //getAllAvailableMoves(board, true);
-        getMinimaxMoves(cutOff, prune, true);
-    }
-
-    private void getMinimaxMoves(int cutOff, boolean prune, boolean computer){
+    public void getMinimaxMoves(int cutOff, boolean prune, boolean computer){
         //set up default alpha beta values
         int alpha = Integer.MAX_VALUE;
         int beta = Integer.MIN_VALUE;
 
-        final String[][]tempBoard = board;
+        //---copy the current board---make a new reference---
+        String[][]tempBoard = new String[boardDimension][boardDimension];
+        copyBoard(tempBoard, board);
 
+        //---check which player is computer---
         if(getIsBlackComputer()){
-            MiniMax(true, prune, computer, tempBoard, cutOff, getBlackScore(), getWhiteScore());
-            //minimax(getWhiteScore(), getBlackScore(), alpha, beta, cutOff, computer,true, prune, tempBoard );
-            System.out.println(bestMove.row+" "+bestMove.col+" "+bestMove.score);
+            //black is computer
+            int computerScore = getBlackScore();
+            int humanScore = getWhiteScore();
+            //call the algorithm
+            MiniMax(true, prune, computer, tempBoard, cutOff, computerScore, humanScore);
         }
         else{
-            MiniMax(true, prune, computer, tempBoard, cutOff, getWhiteScore(), getBlackScore());
-            //minimax(getBlackScore(), getWhiteScore(), alpha, beta, cutOff, computer, true, prune, tempBoard );
-            System.out.println(bestMove.row+" "+bestMove.col+" "+bestMove.score);
+            //white is computer
+            int computerScore = getWhiteScore();
+            int humanScore = getBlackScore();
+            //call the algorithm
+            MiniMax(true, prune, computer, tempBoard, cutOff, computerScore, humanScore);
         }
     }
 
-    public Move bestMove;
-    private int MiniMax(boolean maximizer, boolean prune, boolean computer, String[][]board, int cutOff, int computerScore, int humanScore){
+    //stores the best move as pair of source and destination.
+    public  Pair<Move, Move>  bestMove;
+
+    //minimax Algorithm
+    private int MiniMax(boolean maximizer, boolean prune, boolean computer, String[][]MMboard, int cutOff, int computerScore, int humanScore){
         //Base Case
-        if (cutOff == 0 || !checkRemainingMovesForWhiteMiniMax(board) || !checkRemainingMovesForBlackMiniMax(board)){
+        if ((cutOff == 0)||((blackIsComputer && computer && !checkRemainingMovesForBlackMiniMax(MMboard)) || (whiteIsComputer && computer && !checkRemainingMovesForWhiteMiniMax(MMboard)) || (!blackIsComputer && !computer && !checkRemainingMovesForBlackMiniMax(MMboard) || (!whiteIsComputer && !computer && !checkRemainingMovesForWhiteMiniMax(MMboard))))) {
             int heuristic;
-            if (getBlackTurn()){
-                if (getIsBlackComputer()) heuristic = computerScore-humanScore;
-                else heuristic = humanScore-computerScore;
-            }
-            else{
-                if (getIsWhiteComputer()) heuristic = computerScore-humanScore;
-                else heuristic = humanScore-computerScore;
+            if (getBlackTurn()) {
+                if (getIsBlackComputer()) heuristic = computerScore - humanScore;
+                else heuristic = humanScore - computerScore;
+            } else {
+                if (getIsWhiteComputer()) heuristic = computerScore - humanScore;
+                else heuristic = humanScore - computerScore;
             }
             System.out.println("-----*-----");
-            System.out.println("Heuristic returned: "+ heuristic);
+            System.out.println("Heuristic returned: " + heuristic);
             return heuristic;
         }
 
         if (maximizer){
             int bestHeuristic = Integer.MIN_VALUE;
-            Move tempBest = new Move(-1,-1);
+            Pair<Move, Move> tempBest = new Pair<>(new Move(-1,-1), new Move(-1,-1));
 
             //---generate the tree of the current game state---
             //get all the possible moves from the current game state
-            Queue<Pair<Move, Move>> allMoves = getAllAvailableMoves(board, computer);
+            Queue<Pair<Move, Move>> allMoves = getAllAvailableMoves(MMboard, computer);
             //go to each move and generate its own tree
             while(!allMoves.isEmpty()) {
                 //get the source node, destination node
                 Pair<Move, Move> child = allMoves.poll();
+
                 //Store the current board
                 String[][] previousBoard = new String[boardDimension][boardDimension];
-                copyBoard(previousBoard, board);
+                copyBoard(previousBoard, MMboard);
+
                 //make the move in the passed board
-                makeMoveForMiniMax(child, board);
+                makeMoveForMiniMax(child, MMboard);
+
                 //store the child destination node as Move
                 Move childMove = child.second;
+
                 //change turn and add scores respectively for the next ply
                 if (computer){
                     computerScore += childMove.score;
@@ -454,34 +465,39 @@ public class Board{
                     computer = true;
                 }
                 //go to the next ply with changed turn
-                int tempHeuristic = MiniMax(false, prune, computer, board, cutOff-1, computerScore, humanScore);
+                int tempHeuristic = MiniMax(false, prune, computer, MMboard, cutOff-1, computerScore, humanScore);
 
-                board = previousBoard;
+                MMboard = previousBoard;
                 //change heuristic value only if the tempHeuristic is maximum
                 if (tempHeuristic > bestHeuristic){
-                    tempBest = childMove;
+                    tempBest = child;
                     bestHeuristic = tempHeuristic;
                 }
 
                 //re-store the turn that was changed previously
                 computer = !computer;
+
                 //restore the score as well
                 if (computer) computerScore-=childMove.score;
                 else humanScore-=childMove.score;
-                //do the while loop to get the next child
+                //loop to get the next child
             }
             bestMove = tempBest;
             return bestHeuristic;
         }
         else{//minimizer
             int bestHeuristic = Integer.MAX_VALUE;
-            Move tempBest = new Move(-1,-1);
-            Queue<Pair<Move, Move>> allMoves = getAllAvailableMoves(board, computer);
+            Pair<Move, Move>  tempBest = new Pair<>(new Move(-1,-1), new Move(-1,-1));
+            Queue<Pair<Move, Move>> allMoves = getAllAvailableMoves(MMboard, computer);
             while(!allMoves.isEmpty()) {
                 Pair<Move, Move> child = allMoves.poll();
+
                 String[][] previousBoard = new String[boardDimension][boardDimension];
-                copyBoard(previousBoard, board);
-                makeMoveForMiniMax(child, board);
+
+                copyBoard(previousBoard, MMboard);
+
+                makeMoveForMiniMax(child, MMboard);
+
                 Move childMove = child.second;
                 if (computer){
                     computerScore += childMove.score;
@@ -491,10 +507,10 @@ public class Board{
                     humanScore += childMove.score;
                     computer = true;
                 }
-                int tempHeuristic = MiniMax(true, prune, computer, board, cutOff-1, computerScore, humanScore);
-                board = previousBoard;
+                int tempHeuristic = MiniMax(true, prune, computer, MMboard, cutOff-1, computerScore, humanScore);
+                MMboard = previousBoard;
                 if (tempHeuristic < bestHeuristic){
-                    tempBest = childMove;
+                    tempBest = child;
                     bestHeuristic = tempHeuristic;
                 }
                 computer = !computer;
@@ -514,31 +530,41 @@ public class Board{
         }
     }
 
-    private void makeMoveForMiniMax(Pair<Move,Move> moves, String[][]board){
-        Move source = moves.first;
-        Move destination = moves.second;
+    private void makeMoveForMiniMax(Pair<Move,Move> moves, String[][]MMboard){
+        Move source = move.clone(moves.first);
+        Move destination = move.clone(moves.second);
+
         Stack<Pair<Integer, Integer>> jumps = getPath(source, destination);
 
         int sourceRow = source.row;
         int sourceCol = source.col;
-        System.out.println("-----next-----");
+        System.out.println("-----next move(s)-----");
         System.out.println("source: "+source.row+" X "+ source.col);
 
+        //make all the moves individually
         while(!jumps.isEmpty()){
             Pair<Integer, Integer> nextJump = jumps.pop();
             int destinationRow = nextJump.first;
             int destinationCol = nextJump.second;
+
             System.out.println("destination: "+ destinationRow + " X "+ destinationCol);
-            board = updateButtonForMiniMax(sourceRow, sourceCol, destinationRow, destinationCol, board);
+
+            MMboard = updateButtonForMiniMax(sourceRow, sourceCol, destinationRow, destinationCol, MMboard);
+
+            //set the destination as the new source for the next move to be made
             sourceRow = destinationRow;
             sourceCol = destinationCol;
+
             for(int i = 0; i < boardDimension; i++){
                 for (int j = 0; j<boardDimension; j++){
-                    System.out.print(board[i][j] + " ");
+                    System.out.print(MMboard[i][j] + " ");
                 }
                 System.out.println("\n");
             }
         }
+        System.out.println("Check for source and destination: \n");
+        System.out.println("source: " + source.row + " X " + source.col);
+        System.out.println("destination: " + destination.row + " X " + destination.col);
     }
 
     /*private void getNextChild(String[][]board, boolean computer){
@@ -551,11 +577,15 @@ public class Board{
         }
     }*/
 
-    private Stack<Pair<Integer, Integer>> getPath(Move source, Move destination){
+    //parameters: source node, destination node
+    //returns: Stack<Pair<rows, columns>>; from first jump to destination(last) jump, does not include the source
+    public Stack<Pair<Integer, Integer>> getPath(Move source, Move destination){
         //int count = destination.score;
-        Move temp = destination;
+        Move temp = move.clone(destination);
+
         Stack<Pair<Integer, Integer>> movesMade = new Stack<>();
-        while(temp!=source){
+
+        while(!move.areEqual(temp, source)){
             movesMade.push(new Pair<>(temp.row, temp.col));
             temp = temp.parent;
         }
@@ -566,13 +596,13 @@ public class Board{
         return movesMade;
     }
 
-
     //returns all the available moves for this board.
     //does a depth first search on every available move and stores the source Move and destination Move as a Pair
     //returns: Vector<Pair<Move,Move>>
-    private Queue<Pair<Move,Move>> getAllAvailableMoves(String[][]board, boolean computer){
+    private Queue<Pair<Move,Move>> getAllAvailableMoves(String[][]MMboard, boolean computer){
         int row = -1;
         int col = -1;
+        System.out.println("*****new Node*****");
         //initialise the Vector that stores all Moves
         Queue<Pair<Move, Move>> allMoves = new LinkedList<>();
         //visit every node of the board
@@ -588,10 +618,10 @@ public class Board{
             if((blackIsComputer && computer && isBlack(row,col)) || (whiteIsComputer && computer && isWhite(row, col)) || (!blackIsComputer && !computer && isBlack(row, col)) || (!whiteIsComputer && !computer && isWhite(row,col))) {
                 //do a DFS on this node
                 //check if it has next valid move and if its not an empty stone
-                if(isValidNextMoveForMiniMax(row, col, board) && !isEmptyStoneForMiniMax(row, col, board)) {
+                if(isValidNextMoveForMiniMax(row, col, MMboard) && !isEmptyStoneForMiniMax(row, col, MMboard)) {
                     //get all the destination nodes
                     Move sourceMove = new Move(row, col);
-                    Vector<Move> destinationMoves = DFS(sourceMove);
+                    Vector<Move> destinationMoves = DFS(sourceMove, MMboard);
                     System.out.println("source: "+sourceMove.row+" X "+sourceMove.col);
                     for (int i = 0; i < destinationMoves.size(); i++) {
                         //now store all the destination Moves into the allMoves array
@@ -605,14 +635,14 @@ public class Board{
     }
 
     //checks if the passed node in the passed board has a valid next move with empty stone
-    public boolean isValidNextMoveForMiniMax(int sR, int sC, String[][]board){
+    public boolean isValidNextMoveForMiniMax(int sR, int sC, String[][]MMboard){
         //just pass move(-1,-1) as a dummy move for now
         //we only need to see if the destination is empty slot or not
-        return ((isValidForMiniMax(sR, sC, sR+2, sC, board, new Move(-1,-1)))||(isValidForMiniMax(sR,sC,sR-2,sC, board, new Move(-1,-1)))||(isValidForMiniMax(sR,sC, sR, sC+2, board, new Move(-1,-1)))||isValidForMiniMax(sR,sC,sR,sC-2, board, new Move(-1,-1)));
+        return ((isValidForMiniMax(sR, sC, sR+2, sC, MMboard, new Move(-1,-1)))||(isValidForMiniMax(sR,sC,sR-2,sC, MMboard, new Move(-1,-1)))||(isValidForMiniMax(sR,sC, sR, sC+2, MMboard, new Move(-1,-1)))||isValidForMiniMax(sR,sC,sR,sC-2, MMboard, new Move(-1,-1)));
     }
 
     //returns all available moves for the move parameter passed
-    private Vector<Move> DFS(Move move){
+    private Vector<Move> DFS(Move move, String [][]MMboard){
         Vector<Move> moves = new Vector<>();
         Stack<Move> stack = new Stack<>();
         ArrayList<Pair<Integer, Integer>> visited = new ArrayList<>();
@@ -631,7 +661,7 @@ public class Board{
             initial = false;
 
             //west
-            if (isValidForMiniMax(r, c, r, c - 2, board, move)) {
+            if (isValidForMiniMax(r, c, r, c - 2, MMboard, move)) {
                 Move temp = new Move( current.row, current.col-2);
                 //temp.score = current.score;
                 //there is a valid north move
@@ -655,7 +685,7 @@ public class Board{
                 }
             }
             //south
-            if (isValidForMiniMax(r, c, r + 2, c, board, move)) {
+            if (isValidForMiniMax(r, c, r + 2, c, MMboard, move)) {
                 Move temp = new Move( current.row+2, current.col);
                 temp.score = current.score+1;
                 temp.parent = current;
@@ -671,7 +701,7 @@ public class Board{
                 }
             }
             //east
-            if (isValidForMiniMax(r, c, r, c+2, board, move)) {
+            if (isValidForMiniMax(r, c, r, c+2, MMboard, move)) {
                 Move temp = new Move( current.row, current.col+2);
                 temp.score = current.score+1;
                 temp.parent = current;
@@ -687,7 +717,7 @@ public class Board{
                 }
             }
             //north
-            if (isValidForMiniMax(r, c, r - 2, c, board, move)) {
+            if (isValidForMiniMax(r, c, r - 2, c, MMboard, move)) {
                 Move temp = new Move( current.row-2, current.col);
                 temp.score = current.score+1;
                 temp.parent = current;

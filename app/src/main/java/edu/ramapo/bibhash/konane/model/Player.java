@@ -37,6 +37,7 @@ public class Player {
         return score;
     }
 
+    public void updateScoreComputer(int val){score+=val;}
     //set the score of Player
     public void setScore(int s) {
         score = s;

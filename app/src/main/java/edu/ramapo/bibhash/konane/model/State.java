@@ -44,8 +44,8 @@ public class State {
         getGameState();
     }
 
-    private void setDimension(String value){
-        dimension = Integer.parseInt(value);
+    private void setDimension(int value){
+        dimension = value;
     }
     /*
     parameters passed String
@@ -97,13 +97,25 @@ public class State {
     write the string into the board array accordingly
     */
     private void setBoard(String text){
+        double tempDimension = 0;
+        //get the dimension of the board
+        //iterate through the characters
+        for (int i = 0; i <text.length(); i ++){
+            char c = text.charAt(i);
+            if ( c != ' ') tempDimension++;
+        }
+
+        tempDimension = Math.sqrt(tempDimension);
+        int temp = (int) tempDimension;
+        System.out.println("dimension read: "+ tempDimension + " passed: " + temp);
+
+        setDimension(temp);
+
         String str = text;
-        board = new String[dimension][dimension];
         String[] splitStr = str.split("\\s+");
         int h = 0;
-        while(text!=null){
-
-        }
+        board = new String[dimension][dimension];
+        //set up the board
         for (int i = 0; i < dimension; i++){
             for (int j = 0; j < dimension; j++){
                 board[i][j] = splitStr[h++];
@@ -153,10 +165,10 @@ public class State {
             e.printStackTrace();
         }
 
-        setDimension(textRead[1].trim());
-        setBlackScore(textRead[3].trim());
-        setWhiteScore(textRead[5].trim());
-        String turn = textRead[7].trim();
+        //setDimension(textRead[1].trim());
+        setBlackScore(textRead[1].trim());
+        setWhiteScore(textRead[3].trim());
+        String turn = textRead[5].trim();
         if (turn.toLowerCase().equals("white")){
             setWhiteTurn(true);
             setBlackTurn(false);
@@ -166,7 +178,7 @@ public class State {
             setBlackTurn(true);
         }
 
-        String human = textRead[9].trim();
+        String human = textRead[7].trim();
         if(human.toLowerCase().equals("white")){
             setBlackComputer(true);
             setWhiteComputer(false);
@@ -176,6 +188,6 @@ public class State {
             setWhiteComputer(true);
         }
 
-        setBoard(textRead[11]);
+        setBoard(textRead[9]);
     }
 }
