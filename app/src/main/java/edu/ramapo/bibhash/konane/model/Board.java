@@ -38,6 +38,7 @@ public class Board{
     private boolean blackIsComputer = false;
     private boolean whiteIsComputer = false;
 
+    private long timer = 0;
     /*
     public Queue<Pair<Integer,Integer>> DFSvisitedNodes = new LinkedList<>();
     public Queue<Pair<Integer,Integer>> BFSvisitedNodes = new LinkedList<>();
@@ -387,10 +388,19 @@ public class Board{
         return (r >= 0 && r <boardDimension && c >= 0 && c <boardDimension);
     }
 
+    //returns algorithm time in seconds
+    public double getAlgorithmTime(){
+        return (double)timer/1000;
+    }
+
     public void getMinimaxMoves(int cutOff, boolean prune, boolean computer){
-        //set up default alpha beta values
+        //set up default alpha beta values for when pruning is not to be used
         int alpha = Integer.MAX_VALUE;
         int beta = Integer.MIN_VALUE;
+        if (prune){
+            alpha = Integer.MIN_VALUE;
+            beta = Integer.MAX_VALUE;
+        }
 
         //---copy the current board---make a new reference---
         String[][]tempBoard = new String[boardDimension][boardDimension];
@@ -401,15 +411,24 @@ public class Board{
             //black is computer
             int computerScore = getBlackScore();
             int humanScore = getWhiteScore();
+            //start the timer
+            long startTime = System.currentTimeMillis();
             //call the algorithm
-            MiniMax(true, prune, computer, tempBoard, cutOff, computerScore, humanScore);
+            MiniMax(true, prune, computer, tempBoard, cutOff, computerScore, humanScore, alpha, beta);
+            //end the timmer
+            long endTime = System.currentTimeMillis();
+            //get the difference
+            timer = endTime-startTime;
         }
         else{
             //white is computer
             int computerScore = getWhiteScore();
             int humanScore = getBlackScore();
             //call the algorithm
-            MiniMax(true, prune, computer, tempBoard, cutOff, computerScore, humanScore);
+            long startTime = System.currentTimeMillis();
+            MiniMax(true, prune, computer, tempBoard, cutOff, computerScore, humanScore, alpha, beta);
+            long endTime = System.currentTimeMillis();
+            timer = endTime-startTime;
         }
     }
 
@@ -417,7 +436,7 @@ public class Board{
     public  Pair<Move, Move>  bestMove;
 
     //minimax Algorithm
-    private int MiniMax(boolean maximizer, boolean prune, boolean computer, String[][]MMboard, int cutOff, int computerScore, int humanScore){
+    private int MiniMax(boolean maximizer, boolean prune, boolean computer, String[][]MMboard, int cutOff, int computerScore, int humanScore, int alpha, int beta){
         //Base Case
         if ((cutOff == 0)||((blackIsComputer && computer && !checkRemainingMovesForBlackMiniMax(MMboard)) || (whiteIsComputer && computer && !checkRemainingMovesForWhiteMiniMax(MMboard)) || (!blackIsComputer && !computer && !checkRemainingMovesForBlackMiniMax(MMboard) || (!whiteIsComputer && !computer && !checkRemainingMovesForWhiteMiniMax(MMboard))))) {
             int heuristic;
@@ -465,13 +484,18 @@ public class Board{
                     computer = true;
                 }
                 //go to the next ply with changed turn
-                int tempHeuristic = MiniMax(false, prune, computer, MMboard, cutOff-1, computerScore, humanScore);
+                int tempHeuristic = MiniMax(false, prune, computer, MMboard, cutOff-1, computerScore, humanScore, alpha, beta);
 
                 MMboard = previousBoard;
                 //change heuristic value only if the tempHeuristic is maximum
                 if (tempHeuristic > bestHeuristic){
                     tempBest = child;
                     bestHeuristic = tempHeuristic;
+                }
+
+                if(prune){
+                    if (bestHeuristic>alpha) alpha = bestHeuristic;
+                    if (alpha>=beta) break;
                 }
 
                 //re-store the turn that was changed previously
@@ -507,12 +531,18 @@ public class Board{
                     humanScore += childMove.score;
                     computer = true;
                 }
-                int tempHeuristic = MiniMax(true, prune, computer, MMboard, cutOff-1, computerScore, humanScore);
+
+                int tempHeuristic = MiniMax(true, prune, computer, MMboard, cutOff-1, computerScore, humanScore, alpha, beta);
                 MMboard = previousBoard;
                 if (tempHeuristic < bestHeuristic){
                     tempBest = child;
                     bestHeuristic = tempHeuristic;
                 }
+                if(prune){
+                    if (bestHeuristic < beta) beta = bestHeuristic;
+                    if (beta <= alpha) break;
+                }
+
                 computer = !computer;
                 if(computer) computerScore-=childMove.score;
                 else humanScore-=childMove.score;

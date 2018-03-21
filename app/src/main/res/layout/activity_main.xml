@@ -163,6 +163,7 @@
                 android:layout_height="30dp"
                 android:background="#000000"
                 android:text="log: "
+                android:textSize="15sp"
                 android:textColor="#FFFFFF"
                 android:visibility="visible" />
 

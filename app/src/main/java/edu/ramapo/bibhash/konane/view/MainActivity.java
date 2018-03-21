@@ -22,7 +22,6 @@ import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
-import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.GridLayout;
@@ -51,12 +50,12 @@ import edu.ramapo.bibhash.konane.model.Move;
 public class MainActivity extends Activity {
     private int click = 0;
     private boolean successiveMove = false;
+
     private ImageView sourceClick;
     private ImageView destinationClick;
     private Animation animation = new AlphaAnimation(1, 0);
-    private ArrayAdapter<CharSequence> adapter;
-    private HashMap<Integer, Pair<Integer, Integer>> key = new HashMap<>();
 
+    private HashMap<Integer, Pair<Integer, Integer>> key = new HashMap<>();
     private Board gameBoard = new Board();
 
     private int srcRow, srcCol, dstRow, dstCol;
@@ -190,47 +189,53 @@ public class MainActivity extends Activity {
     //takes the input from the player for the ply cut-off and passes it to the Board Class
     //also prompts the user the moves of computer by animation.
     public void plyEnter(View view){
-
+        //get the value entered as string
         EditText cutOff = findViewById(R.id.plyCutoff);
         String value = cutOff.getText().toString();
         //no value entered
         if (value.equals("")){
-            makeToast("Enter A Value");
+            //set plycutoff as the highest value
+            plyCutOff = Integer.MAX_VALUE;
+            makeToast("Ply Cut-off is max.");
         }
         //value entered
         else {
-            int v = Integer.parseInt(value);
-            plyCutOff = v;
-            //Computer's turn
-            if ((gameBoard.getBlackTurn() && gameBoard.getIsBlackComputer()) || (gameBoard.getWhiteTurn() && gameBoard.getIsWhiteComputer())) {
-                makeToast("Ply entered: " +v);
-                gameBoard.getMinimaxMoves(plyCutOff, prune, true);
-                //---bestMove is updated---
-                //---get the source---
-                Pair<Move, Move> temp = gameBoard.bestMove;
-                int sourceRow = temp.first.row;
-                int sourceCol = temp.first.col;
-                int tempId = sourceRow * 10 + sourceCol;
-                ImageView btn = findViewById(tempId);
-                animateButtons(btn);
-                //---get the destinations---
-                Stack<Pair<Integer, Integer>> jumps = gameBoard.getPath(temp.first, temp.second);
-                //---animate every one of them---
-                while (!jumps.isEmpty()) {
-                    Pair<Integer, Integer> j = jumps.pop();
-                    tempId = j.first * 10 + j.second;
-                    btn = findViewById(tempId);
-                    animateButtons(btn);
-                }
-            }
-            //human's turn
-            else makeToast("ply Cut-off: " + v + " entered for human.");
+            plyCutOff = Integer.parseInt(value);
         }
+        //this used to be in the if statement and ply-cutoff was null if "" was entered
+        //Computer's turn
+        if ((gameBoard.getBlackTurn() && gameBoard.getIsBlackComputer()) || (gameBoard.getWhiteTurn() && gameBoard.getIsWhiteComputer())) {
+            makeToast("Ply Cut-off entered: " + plyCutOff);
+            gameBoard.getMinimaxMoves(plyCutOff, prune, true);
+            //---bestMove is updated---
+            //---get the source---
+            Pair<Move, Move> temp = gameBoard.bestMove;
+            int sourceRow = temp.first.row;
+            int sourceCol = temp.first.col;
+            int tempId = sourceRow * 10 + sourceCol;
+            ImageView btn = findViewById(tempId);
+            animateButtons(btn);
+            int score = 0;
+            //---get the destinations---
+            Stack<Pair<Integer, Integer>> jumps = gameBoard.getPath(temp.first, temp.second);
+            //---animate every one of them---
+            while (!jumps.isEmpty()) {
+                score++;
+                Pair<Integer, Integer> j = jumps.pop();
+                tempId = j.first * 10 + j.second;
+                btn = findViewById(tempId);
+                animateButtons(btn);
+            }
+            makeToast("Points Gained: "+score);
+            showAlgorithmTime();
+        }
+        //human's turn
+        else makeToast("ply Cut-off: " + plyCutOff + " entered for human.");
     }
 
     //let the computer make the move
     public void goButton(View view){
-        System.out.println("black: " + gameBoard.getBlackTurn());
+        //System.out.println("black: " + gameBoard.getBlackTurn());
         if ((gameBoard.getBlackTurn() && gameBoard.getIsBlackComputer()) || (gameBoard.getWhiteTurn() && gameBoard.getIsWhiteComputer())) {
             //computer's turn and same player is computer
             Pair<Move, Move> temp = gameBoard.bestMove;
@@ -246,9 +251,9 @@ public class MainActivity extends Activity {
                 score++;
                 Pair<Integer, Integer> j = jumps.pop();
                 tempId = j.first * 10 + j.second;
-                ImageView destnationBtn = findViewById(tempId);
-                makeMove(sourceBtn, destnationBtn);
-                sourceBtn = destnationBtn;
+                ImageView destinationBtn = findViewById(tempId);
+                makeMove(sourceBtn, destinationBtn);
+                sourceBtn = destinationBtn;
             }
             //---update the score---
             if (gameBoard.getBlackTurn()) gameBoard.updateBlackScoreComputer(score);
@@ -272,11 +277,10 @@ public class MainActivity extends Activity {
         }
         else makeToast("Its your turn.");
         //makeToast("you pressed go.");
+
     }
 
     public void hintMove(View view) {
-        System.out.println("black: " + gameBoard.getBlackTurn());
-
         //human's turn
         if ((gameBoard.getBlackTurn() && gameBoard.getIsWhiteComputer()) || (gameBoard.getWhiteTurn() && gameBoard.getIsBlackComputer())) {
             gameBoard.getMinimaxMoves(plyCutOff, prune, false);
@@ -288,20 +292,32 @@ public class MainActivity extends Activity {
             int tempId = sourceRow*10+sourceCol;
             ImageView btn = findViewById(tempId);
             animateButtons(btn);
+            int score = 0;
             //---get the destinations---
             Stack<Pair<Integer, Integer>> jumps = gameBoard.getPath(temp.first, temp.second);
             //---animate every one of them---
             while (!jumps.isEmpty()) {
+                score++;
                 Pair<Integer, Integer> j = jumps.pop();
                 tempId = j.first * 10 + j.second;
                 btn = findViewById(tempId);
                 animateButtons(btn);
             }
+            makeToast("Points Gained: "+score);
+            showAlgorithmTime();
         }
         //computer's turn
         else makeToast("Its Computer's turn!");
     }
 
+    private void showAlgorithmTime(){
+        double time = gameBoard.getAlgorithmTime();
+        TextView timer = findViewById(R.id.log);
+        String text = "Time taken: ";
+        text += time;
+        text += " seconds.";
+        timer.setText(text);
+    }
 
     //Initialises the board, assigns values to the hashmap to communicate with the logic and view
     //Grid Layout assigns its child rows or columns with integer value that increases as we move to next row or col
@@ -457,7 +473,6 @@ public class MainActivity extends Activity {
                                    srcRow = dstRow;
                                    srcCol = dstCol;
                                    successiveMove = true;
-
                                }
                                //---no valid next move---
                                else {
