@@ -1,8 +1,8 @@
 /************************************************************
  *  Name: Bibhash Mulmi                                     *
- * Project:  Project 2 Konane                               *
+ * Project:  Project 3 Two Player Konane                    *
  * Class:  CMPS 331 Artificial Intelligence                 *
- * Date:  03/07/2018                                        *
+ * Date:  03/23/2018                                        *
  ************************************************************/
 
 package edu.ramapo.bibhash.konane.model;
@@ -12,10 +12,7 @@ import android.util.Pair;
 import java.io.InputStream;
 import java.lang.*;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Stack;
@@ -29,7 +26,6 @@ public class Board{
     private Player whitePlayer = new Player();
     private State gameState = new State();
     private Move move = new Move(-1,-1);
-    private Game game = new Game();
 
     public String white = "W";
     public String black = "B";
@@ -39,28 +35,101 @@ public class Board{
     private boolean whiteIsComputer = false;
 
     private long timer = 0;
+
+
+    private Pair<Integer, Integer> removedBtn1;
+    private Pair<Integer, Integer> removedBtn2;
+
+
+    /**----------accessors for player's private data----------**/
     /*
-    public Queue<Pair<Integer,Integer>> DFSvisitedNodes = new LinkedList<>();
-    public Queue<Pair<Integer,Integer>> BFSvisitedNodes = new LinkedList<>();
-    public Queue<Pair<Integer, Integer>> BestFirstSearchList = new LinkedList<>();
+    parameters: nothing
+    returns: int black stone's score
+     */
+    public int getBlackScore(){return blackPlayer.getScore();}
 
-    //public Map<Pair<Integer, Integer>, Stack<Pair<Integer, Integer>>> nMoves= new HashMap();
+    /*
+    parameters: nothing
+    returns: int white stone's score
+     */
+    public int getWhiteScore(){return whitePlayer.getScore();}
 
-    public Pair<Integer, Integer> fromThisButton;
-    public Pair<Integer, Integer> toThisButton;
-    public ArrayList<Pair<Integer, Integer>> toTheseButtons;
-    */
+    //accessor for black stone's turn
+    public boolean getBlackTurn(){
+        return blackPlayer.isTurn();
+    }
+
+    //accessor for white stone's turn
+    public boolean getWhiteTurn(){
+        return whitePlayer.isTurn();
+    }
+
+    //accessor true or false for Black as a Computer
+    public boolean getIsBlackComputer (){return blackPlayer.isComputer();}
+
+    //accessor true or false for White as a Computer
+    public boolean getIsWhiteComputer (){return whitePlayer.isComputer();}
+
+    /**----------mutators for player's private data----------**/
+    /*
+    parameters: int score
+    returns: nothing
+     */
+    //increases the score by value of passed parameter for Black stone
+    public void updateBlackScore(int score){
+        blackPlayer.updateScore(score);
+    }
+
+    /*
+    parameter: int score
+    returns: nothing
+     */
+    //increases the score by value of passed parameter for White stone
+    public void updateWhiteScore(int score){
+        whitePlayer.updateScore(score);
+    }
+
+    //mutator for black stone's turn
+    public void setBlackTurn(boolean i){
+        blackPlayer.setTurn(i);
+    }
+
+    //mutator for white stone's turn
+    public void setWhiteTurn(boolean i){
+        whitePlayer.setTurn(i);
+    }
+
+    //mutator for black stone's computerPlays boolean
+    public void setBlackAsComputer(){ blackIsComputer = true; blackPlayer.setComputerPlays(true); whitePlayer.setComputerPlays(false);}
+
+    //mutator for white stone's computerPlays boolean
+    public void setWhiteAsComputer(){ whiteIsComputer = true; whitePlayer.setComputerPlays(true); blackPlayer.setComputerPlays(false);}
 
 
-
+    /**----------public functions of Board Class----------**/
+    /*
+    parameters: int dimension
+    returns: nothing
+     */
+    //sets the board dimension
     public void setBoardDimension(int dimension){
         boardDimension = dimension;
     }
 
+    /*
+    parameters: nothing
+    returns: int board dimension
+     */
+    //returns the board dimension
     public int getBoardDimension(){
         return boardDimension;
     }
 
+    /*
+    parameters: nothing
+    returns: nothing
+     */
+    //initialises the new Game
     public void newGame (){
         makeBoard();
         removeButton();
@@ -68,7 +137,11 @@ public class Board{
         whitePlayer.setTurn(false);
     }
 
-    //generates the board as an array of strings
+    /*
+    parameters: nothing
+    returns: nothing
+     */
+    //generates the board as a 2X2 array of strings
     private void makeBoard(){
         int temp = boardDimension;
         board = new String[temp][temp];
@@ -81,92 +154,19 @@ public class Board{
     }
 
     /*
-    sets the prune status as true or false
+    parameters: Input stream is
+    returns: nothing
      */
-    //public void setPrune(boolean v){
-        //prune = v;
-    //}
+    //loads the game passed from the input stream
     /*
-    sets the plyCutoff int value
-     */
-    //public void setPlyCutoff(int v){
-      //  plyCutoff = v;
-    //}
-    /*
-    returns the score of the Black Stone from Player Class
-     */
-    public int getBlackScore(){
-        return blackPlayer.getScore();
-    }
-
-    /*
-    returns the score of the White Stone from Player Class
-     */
-    public int getWhiteScore(){
-        return whitePlayer.getScore();
-    }
-
-    public void updateBlackScoreComputer(int val){blackPlayer.updateScoreComputer(val);}
-    public void updateWhiteScoreComputer(int val){whitePlayer.updateScoreComputer(val);}
-    /*
-    sets the score of the Black Stone from Player Class
-     */
-    public void updateBlackScore(){
-        blackPlayer.updateScore();
-    }
-
-    /*
-    sets the score of the White Stone from Player Class
-     */
-    public void updateWhiteScore(){
-        whitePlayer.updateScore();
-    }
-
-    /*
-    returns the turn of the Black Stone from Player Class
-     */
-    public boolean getBlackTurn(){
-        return blackPlayer.isTurn();
-    }
-
-    /*
-    returns the turn of the White Stone from Player Class
-     */
-    public boolean getWhiteTurn(){
-        return whitePlayer.isTurn();
-    }
-
-    /*
-    sets the turn of the Black Stone from Player Class
-    accepts boolean parameter
-    setBlackTurn(boolean)
-     */
-    public void setBlackTurn(boolean i){
-        blackPlayer.setTurn(i);
-    }
-
-    /*
-   sets the turn of the White Stone from Player Class
-   accepts boolean parameter
-   setWhiteTurn(boolean)
-    */
-    public void setWhiteTurn(boolean i){
-        whitePlayer.setTurn(i);
-    }
-
-    public void setBlackAsComputer(){ blackIsComputer = true; blackPlayer.setComputerPlays(true); whitePlayer.setComputerPlays(false);}
-
-    public void setWhiteAsComputer(){ whiteIsComputer = true; whitePlayer.setComputerPlays(true); blackPlayer.setComputerPlays(false);}
-
-    public boolean getIsBlackComputer (){return blackPlayer.isComputer();}
-
-    public boolean getIsWhiteComputer (){return whitePlayer.isComputer();}
-    /*
-    accepts InputStream parameter
-    Loads the selected game file from State.java
-    sets the gameState
-    sets score of each player
-    sets turn of each player
+    sets board dimension
+    sets board array
+    sets black stone's turn
+    sets white stone's turn
+    sets black stone's computerPlays boolean
+    sets white stone's computerPlays boolean
+    sets blackIsComputer boolean of this class
+    sets whiteIsComputer boolean of this class
      */
     public void loadGame(InputStream is){
         gameState.setInputStream(is);
@@ -191,31 +191,20 @@ public class Board{
         }
         else setWhiteAsComputer();
     }
-    //randomly removes two buttons, set their imageResource to 0
+
     /*
-    for black stones
-    do {
-        generate random row and col
-    }while ((anyone is odd))
-    updateBoard[row][col]
-
-    for white stones
-    do{
-        generate random row and col
-    } while((both are odd) or (both are even))
-
-    updateBoard[row][col]
+    parameters: nothing
+    returns: nothing
     */
-
-    private Pair<Integer, Integer> removedBtn1;
-    private Pair<Integer, Integer> removedBtn2;
-    public void removeButton() {
+    //removes two random elements from the 2X2 board array
+    private void removeButton() {
         Random rdm = new Random();
         int row, col;
         do {
             row = rdm.nextInt(boardDimension) % boardDimension;
             col = rdm.nextInt(boardDimension) % boardDimension;
         } while ((row % 2 == 1 || col % 2 == 1));
+
         //update the board array
         removedBtn1 = new Pair(row, col);
         board[row][col] = empty;
@@ -228,6 +217,11 @@ public class Board{
         board[row][col] = empty;
     }
 
+    /*
+    parameters: nothing
+    returns: Pair<>[]
+     */
+    //accessor for the two initially removed buttons of the game
     public Pair<Integer, Integer>[] getRemovedBtns(){
         Pair<Integer, Integer> [] temp = new Pair[2];
         temp[0] = removedBtn1;
@@ -235,11 +229,11 @@ public class Board{
         return temp;
     }
 
-    //updateButton updates the board array once the move is made
-    //calls slotsToRemove from game class, receives the row and column values as row*10+col
-    //breaks down the row = row/10, col = col%10.
-    //update Button (Source Row, Source Column, Destination Row, Destination Column)
-    //returns the pair<row, col>
+    /*
+    parameters: int source row, int source column, int destination row, int destination column
+    returns: Pair<>(captured stone's row, captured stone's column)
+     */
+    //updates the 2X2 board array
     public Pair updateButton(int srcRow, int srcCol, int dstRow, int dstCol){
         //-------update the destination------
         if (isBlack(srcRow,srcCol)) board[dstRow][dstCol] = black;
@@ -249,7 +243,7 @@ public class Board{
         board[srcRow][srcCol] = empty;
 
         //-------update the captured stone--------
-        int temp = game.slotsToRemove(srcRow, srcCol, dstRow, dstCol);
+        int temp = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
         int btnRow = temp/10;
         int btnCol = temp%10;
         board[btnRow][btnCol] = empty;
@@ -257,67 +251,70 @@ public class Board{
         return btnId;
     }
 
-    //check to see if the move is valid or not
-    //first, checks if both destination and source are the same stone slots
-    //second, checks if destination and source are two slots away, if the destination slot is empty, and if the source slot is empty
-    //third, checks the slotsToRemove, returns true if the slotsToRemove is opponent's stone| else returns false
-    //isValid(Source Row, Source Column, Destination Row, Destination Column)
-    //returns boolean value
+    /*
+    parameters: int source row, int source column, int destination row, int destination column
+    returns: boolean value
+     */
+    //checks if the move is valid or not
     public boolean isValid(int srcRow, int srcCol, int dstRow, int dstCol){
         int slot;
-        //for black stones
+        //----------for black stones----------
         if (isBlack(dstRow, dstCol) && (isBlack(srcRow, srcCol))){
             if ((isTwoSlotsAway(srcRow, srcCol, dstRow, dstCol))&&(isEmptyStone(dstRow, dstCol))&&!(isEmptyStone(srcRow, srcCol))) {
                 //get the stone that is to be captured
-                slot = game.slotsToRemove(srcRow, srcCol, dstRow, dstCol);
+                slot = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
                 return (board[slot / 10][slot % 10].equals(white));
             }
             else return false;
         }
 
-        //for white stones
+        //----------for white stones----------
         else if (isWhite(dstRow,dstCol) && isWhite(srcRow, srcCol)){
 
             if(isTwoSlotsAway(srcRow,srcCol,dstRow,dstCol) && isEmptyStone(dstRow, dstCol)&&!(isEmptyStone(srcRow, srcCol))){
 
-                slot = game.slotsToRemove(srcRow, srcCol, dstRow, dstCol);
+                slot = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
                 return (board[slot / 10][slot % 10].equals(black));
             }
             else return false;
         }
 
-        //for empty slots
+        //----------for empty slots----------
         else return false;
     }
 
-    //checks if the stone is black or not
-    //isBlack(Row, Column)
-    //returns true if the (Row, Column) == (Even, Even) or (Odd,Odd)
+    /*
+    parameters: int row, int col
+    returns: boolean
+     */
+    //checks if the (row, col) is black stone's slot
     public boolean isBlack (int R, int C){
         return ((R%2==0 && C%2==0) || (R%2==1 && C%2==1));
     }
 
-    //checks if the stone is white or not
-    //isWhite(Row, Column)
-    //Returns true if the (Row, Column) == (Odd, Even) or (Even, Odd)
+    /*
+    parameters: int row, int col
+    returns: boolean
+     */
+    //checks if the (row, col) is white stone's slot
     public boolean isWhite (int R, int C){
         return ((R%2!=0 && C%2==0) || (R%2==0 && C%2!=0));
     }
 
-    //checks if the destination slot is two slots away
-    /*returns true if
-        destinationColumn==SourceColumn and (destinationRow ==SourceRow +- 2)
-        if destinationRow==SourceRow and (destinationCol==SourceCol+-2)
-    */
-    //isTwoSlotsAway(Source Row, Source Column, Destination Row, destination Column
-    //returns boolean value
+    /*
+    parameters: int source row, source col, destination row, destination column
+    returns: boolean
+     */
+    //checks if the destination is exactly two slots away from the source
     private boolean isTwoSlotsAway (int sR, int sC, int dR, int dC){
         return (((dR == sR + 2) && (dC == sC)) || ((dC == sC + 2)&& (dR == sR)) || ((dR == sR - 2)&& (dC == sC)) || ((dC == sC - 2) && (dR == sR)));
     }
 
-    //checks if the board[Row][Col] equals empty in the board array
-    //isEmpty(Row, Column)
-    //returns false if either row or col < 0 or > 5
+    /*
+    parameters: int row, int column
+    returns: boolean
+     */
+    //checks if the (row, col) is equal to an empty slot in the 2X2 board array
     public boolean isEmptyStone(int dR, int dC){
 
         if (!isInBoard(dR, dC)){
@@ -329,13 +326,11 @@ public class Board{
         }
     }
 
-    //check to see if immediate next move is possible
-    //uses the isValid function mentioned above
-
-    //isValidNextMove(Row, Column)
-    /*returns true if
-        isValid(same Col, Row+-2) and isValid(same Row, Col+-2)
-    */
+    /*
+    parameters: int row, int col
+    returns: boolean
+     */
+    //checks if the (row, col) has a valid move
     public boolean isValidNextMove(int dR, int dC){
         int sR = dR;
         int sC = dC;
@@ -343,10 +338,11 @@ public class Board{
         return ((isValid(sR, sC, sR+2, sC))||(isValid(sR,sC,sR-2,sC))||(isValid(sR,sC, sR, sC+2))||isValid(sR,sC,sR,sC-2));
     }
 
-    //check in every slot to see if there is any more move left for black stone
-    //traverses the board array and uses the isValid function, isValid(sameRow, Col+-2) or isValid(sameCol, Row+-2)
-    //keeps count if any one returns true
-    //if count > 0, returns true
+    /*
+    parameters: nothing
+    returns: nothing
+     */
+    //checks if there is any remaining moves left for black stone in the board array
     public boolean checkRemainingMovesForBlack() {
         int count = 0;
         for (int i = 0; i < boardDimension; i++) {
@@ -354,15 +350,12 @@ public class Board{
                 //check if slot is black
                 if (isBlack(i,j) && !isEmptyStone(i,j)) {
                     //check if any one of the neighbouring slots is valid for move
-                    //check up
                     if (isValid(i, j, i - 2, j)||isValid(i, j, i + 2, j)||isValid(i, j, i, j + 2)||isValid(i, j, i, j - 2)){
                         count++;
                     }
                 }
             }
         }
-        //System.out.print("Black valid moves: ");
-        //System.out.println(count);
         return (count!=0);
     }
 
@@ -378,23 +371,105 @@ public class Board{
                 }
             }
         }
-        //System.out.print("White valid moves: ");
-        //System.out.println(count);
         return (count != 0);
     }
 
+    //Receives either Row (destination, source) or Column (destination, source)
+    //returns the neighboring slot in the board array that has been captured.
+    public int disappearSlot(int destination, int source) {
+        switch (destination) {
+            case 0:
+                return 1;
+            case 1:
+                return 2;
+            case 2:
+                switch (source) {
+                    case 0:
+                        return 1;
+                    case 4:
+                        return 3;
+                    default:
+                        break;
+                }
+            case 3:
+                switch (source) {
+                    case 1:
+                        return 2;
+                    case 5:
+                        return 4;
+                    default:
+                        break;
+                }
+            case 4:
+                return 3;
+            case 5:
+                return 4;
+            default:
+                return 0;
+        }
+    }
+
+    //Receives (Source Row, Source Column, Destination Row, Destination Column)
+
+    /*if the destination row and source rows are the same
+        call disappearSlot function to get the column that is captured
+        return the Row, Col slot values of the array
+     else if the destination column and source column are the same
+        call disappearSlot to get the row that is captured
+        return the Row, Col values of the array
+     */
+
+    //returns the row and column of the array as row*10+col
+    public int slotsToRemove(int srcRow, int srcCol, int dstRow, int dstCol){
+        //System.out.println("update button called");
+        int btnRow;
+        int btnCol=0;
+        int btnId=0;
+        //if same row
+        if ((dstRow == srcRow) && (dstCol != srcCol)) {
+            if(srcCol>dstCol) btnCol = dstCol+1;
+            else btnCol = srcCol+1;
+            btnRow = dstRow;
+            btnId = btnRow*10+btnCol;
+        }
+
+        else if ((dstCol == srcCol) && (dstRow != srcRow)){
+            if (srcRow>dstRow) btnRow = dstRow+1;
+            else btnRow = srcRow+1;
+            btnCol = dstCol;
+            btnId = btnRow*10+btnCol;
+        }
+
+        else{
+            System.out.println("");
+        }
+        return btnId;
+    }
+
     //checks if the slot is in board 6X6
-    public boolean isInBoard(int r, int c){
+    private boolean isInBoard(int r, int c){
         return (r >= 0 && r <boardDimension && c >= 0 && c <boardDimension);
     }
 
-    //returns algorithm time in seconds
+    /*
+    parameters: nothing
+    returns: double time
+     */
+    //accessor for timer value
     public double getAlgorithmTime(){
-        return (double)timer/1000;
+        return (double)timer;
     }
 
+    /*
+    parameters: int cut off value, boolean prune, boolean computer
+    returns: nothing
+     */
+    /*
+    Sets alpha, beta values according to the boolean of prune passed
+    Calls MiniMax function according to the boolean of computer passed
+     */
     public void getMinimaxMoves(int cutOff, boolean prune, boolean computer){
-        //set up default alpha beta values for when pruning is not to be used
+        //---set up default alpha beta values for when pruning is not to be used---
         int alpha = Integer.MAX_VALUE;
         int beta = Integer.MIN_VALUE;
         if (prune){
@@ -402,41 +477,45 @@ public class Board{
             beta = Integer.MAX_VALUE;
         }
 
-        //---copy the current board---make a new reference---
+        //---copy the current board---
         String[][]tempBoard = new String[boardDimension][boardDimension];
         copyBoard(tempBoard, board);
 
+        int maxP = 0;
+        int minP = 0;
         //---check which player is computer---
-        if(getIsBlackComputer()){
-            //black is computer
+        if(getIsBlackComputer()){ //black is computer
             int computerScore = getBlackScore();
             int humanScore = getWhiteScore();
-            //start the timer
+            //---start the timer---
             long startTime = System.currentTimeMillis();
-            //call the algorithm
-            MiniMax(true, prune, computer, tempBoard, cutOff, computerScore, humanScore, alpha, beta);
-            //end the timmer
+            //---call MiniMax algorithm---
+            MiniMax(true, prune, computer, tempBoard, cutOff, computerScore, humanScore, alpha, beta, maxP,minP, new Child (tempBoard, 0,0));
+            //---end the timer---
             long endTime = System.currentTimeMillis();
-            //get the difference
+            //---set the timer---
             timer = endTime-startTime;
+
         }
-        else{
-            //white is computer
+        else{ //white is computer
             int computerScore = getWhiteScore();
             int humanScore = getBlackScore();
-            //call the algorithm
+            //---start the timer---
             long startTime = System.currentTimeMillis();
-            MiniMax(true, prune, computer, tempBoard, cutOff, computerScore, humanScore, alpha, beta);
+            //---call MiniMax algorithm---
+            MiniMax(true, prune, computer, tempBoard, cutOff, computerScore, humanScore, alpha, beta, maxP, minP, new Child (tempBoard, 0,0));
+            //---end the timer---
             long endTime = System.currentTimeMillis();
+            //---set the timer---
             timer = endTime-startTime;
         }
     }
 
-    //stores the best move as pair of source and destination.
     public  Pair<Move, Move>  bestMove;
+    public Child cld;
 
     //minimax Algorithm
-    private int MiniMax(boolean maximizer, boolean prune, boolean computer, String[][]MMboard, int cutOff, int computerScore, int humanScore, int alpha, int beta){
+    private int MiniMax(boolean maximizer, boolean prune, boolean computer, String[][]MMboard, int cutOff, int computerScore, int humanScore, int alpha, int beta, int maxPoints, int minPoints, Child passedChild){
         //Base Case
         if ((cutOff == 0)||((blackIsComputer && computer && !checkRemainingMovesForBlackMiniMax(MMboard)) || (whiteIsComputer && computer && !checkRemainingMovesForWhiteMiniMax(MMboard)) || (!blackIsComputer && !computer && !checkRemainingMovesForBlackMiniMax(MMboard) || (!whiteIsComputer && !computer && !checkRemainingMovesForWhiteMiniMax(MMboard))))) {
             int heuristic;
@@ -453,8 +532,11 @@ public class Board{
         }
 
         if (maximizer){
+            //int maxiTotalScore = 0;
+            //int miniTotalScore = 0;
             int bestHeuristic = Integer.MIN_VALUE;
             Pair<Move, Move> tempBest = new Pair<>(new Move(-1,-1), new Move(-1,-1));
+            Child tempBestChild = new Child (MMboard, maxPoints, minPoints);
 
             //---generate the tree of the current game state---
             //get all the possible moves from the current game state
@@ -466,6 +548,7 @@ public class Board{
 
                 //Store the current board
                 String[][] previousBoard = new String[boardDimension][boardDimension];
+
                 copyBoard(previousBoard, MMboard);
 
                 //make the move in the passed board
@@ -473,6 +556,11 @@ public class Board{
 
                 //store the child destination node as Move
                 Move childMove = child.second;
+
+                //add the score earned by that move
+                maxPoints += childMove.score;
+
+                Child passingChild = new Child(MMboard, childMove.score, 0);
 
                 //change turn and add scores respectively for the next ply
                 if (computer){
@@ -484,34 +572,50 @@ public class Board{
                     computer = true;
                 }
                 //go to the next ply with changed turn
-                int tempHeuristic = MiniMax(false, prune, computer, MMboard, cutOff-1, computerScore, humanScore, alpha, beta);
+                int tempHeuristic = MiniMax(false, prune, computer, MMboard, cutOff-1, computerScore, humanScore, alpha, beta, maxPoints, minPoints, passingChild);
 
-                MMboard = previousBoard;
                 //change heuristic value only if the tempHeuristic is maximum
                 if (tempHeuristic > bestHeuristic){
+                    //set the returned child as the best child of current child
+                    passedChild.bestChild = passingChild;
+                    tempBestChild = passedChild;
+                    //maxiTotalScore = maxPoints;
                     tempBest = child;
                     bestHeuristic = tempHeuristic;
+                    //System.out.println("maximizer pts: " + maxiTotalScore);
                 }
+
+                MMboard = previousBoard;
 
                 if(prune){
                     if (bestHeuristic>alpha) alpha = bestHeuristic;
-                    if (alpha>=beta) break;
+                    if (alpha>=beta){
+                        System.out.println("****pruned rest of the children****");
+                        break;
+                    }
                 }
 
+                //re-store the maxPoints
+                maxPoints-=childMove.score;
                 //re-store the turn that was changed previously
                 computer = !computer;
-
                 //restore the score as well
                 if (computer) computerScore-=childMove.score;
                 else humanScore-=childMove.score;
                 //loop to get the next child
             }
             bestMove = tempBest;
+            cld = tempBestChild;
+            //MaximizerScore += maxiTotalScore;
+            //MinimizerScore = miniTotalScore;
             return bestHeuristic;
         }
         else{//minimizer
             int bestHeuristic = Integer.MAX_VALUE;
+            //int maxiTotalScore = 0;
+            //int miniTotalScore = 0;
             Pair<Move, Move>  tempBest = new Pair<>(new Move(-1,-1), new Move(-1,-1));
+            Child tempBestChild = new Child (MMboard, maxPoints, minPoints);
             Queue<Pair<Move, Move>> allMoves = getAllAvailableMoves(MMboard, computer);
             while(!allMoves.isEmpty()) {
                 Pair<Move, Move> child = allMoves.poll();
@@ -523,6 +627,11 @@ public class Board{
                 makeMoveForMiniMax(child, MMboard);
 
                 Move childMove = child.second;
+
+                minPoints += childMove.score;
+
+                Child passingChild = new Child(MMboard, 0, childMove.score);
+
                 if (computer){
                     computerScore += childMove.score;
                     computer = false;
@@ -532,26 +641,44 @@ public class Board{
                     computer = true;
                 }
 
-                int tempHeuristic = MiniMax(true, prune, computer, MMboard, cutOff-1, computerScore, humanScore, alpha, beta);
-                MMboard = previousBoard;
+                int tempHeuristic = MiniMax(true, prune, computer, MMboard, cutOff-1, computerScore, humanScore, alpha, beta, maxPoints, minPoints, passingChild);
+
                 if (tempHeuristic < bestHeuristic){
+                    //set the current child's best child as the passed child
+                    passedChild.bestChild = passingChild;
+                    tempBestChild = passedChild;
+                    //miniTotalScore = minPoints;
+                    //maxiTotalScore += maxPoints;
+                    //System.out.println("minimizer's points: " + miniTotalScore);
                     tempBest = child;
                     bestHeuristic = tempHeuristic;
                 }
+
+                MMboard = previousBoard;
+
                 if(prune){
                     if (bestHeuristic < beta) beta = bestHeuristic;
                     if (beta <= alpha) break;
                 }
-
+                //restore the values
+                minPoints-=childMove.score;
                 computer = !computer;
                 if(computer) computerScore-=childMove.score;
                 else humanScore-=childMove.score;
             }
             bestMove = tempBest;
+            cld = tempBestChild;
+            //MinimizerScore += miniTotalScore;
+            //MaximizerScore = maxiTotalScore;
             return bestHeuristic;
         }
     }
 
+    /*
+    parameters: String[][] to be changed board, String[][] to be copied board
+    returns: nothing
+     */
+    //copies the elements from one 2X2 array to another
     private void copyBoard(String[][]toThis, String[][]fromThis){
         for(int i = 0; i<fromThis.length; i++){
             for (int j = 0; j<fromThis[i].length; j++){
@@ -560,6 +687,11 @@ public class Board{
         }
     }
 
+    /*
+    parameters: Pair<Source Move, Destination Move>, String[][] board
+    returns: nothing
+     */
+    //makes changes to the board array by making moves from the source to destination
     private void makeMoveForMiniMax(Pair<Move,Move> moves, String[][]MMboard){
         Move source = move.clone(moves.first);
         Move destination = move.clone(moves.second);
@@ -568,8 +700,8 @@ public class Board{
 
         int sourceRow = source.row;
         int sourceCol = source.col;
-        System.out.println("-----next move(s)-----");
-        System.out.println("source: "+source.row+" X "+ source.col);
+        //System.out.println("-----next move(s)-----");
+        //System.out.println("source: "+source.row+" X "+ source.col);
 
         //make all the moves individually
         while(!jumps.isEmpty()){
@@ -577,7 +709,7 @@ public class Board{
             int destinationRow = nextJump.first;
             int destinationCol = nextJump.second;
 
-            System.out.println("destination: "+ destinationRow + " X "+ destinationCol);
+            //System.out.println("destination: "+ destinationRow + " X "+ destinationCol);
 
             MMboard = updateButtonForMiniMax(sourceRow, sourceCol, destinationRow, destinationCol, MMboard);
 
@@ -585,27 +717,18 @@ public class Board{
             sourceRow = destinationRow;
             sourceCol = destinationCol;
 
-            for(int i = 0; i < boardDimension; i++){
+            //check the board after the move is made
+            /*for(int i = 0; i < boardDimension; i++){
                 for (int j = 0; j<boardDimension; j++){
                     System.out.print(MMboard[i][j] + " ");
                 }
                 System.out.println("\n");
-            }
+            }*/
         }
-        System.out.println("Check for source and destination: \n");
+        /*System.out.println("Check for source and destination: \n");
         System.out.println("source: " + source.row + " X " + source.col);
-        System.out.println("destination: " + destination.row + " X " + destination.col);
+        System.out.println("destination: " + destination.row + " X " + destination.col);*/
     }
-
-    /*private void getNextChild(String[][]board, boolean computer){
-        Queue<Pair<Move, Move>> allMoves = getAllAvailableMoves(board, computer);
-        while(!allMoves.isEmpty()) {
-            Pair<Move, Move> temp = allMoves.poll();
-            Move source = temp.first;
-            Move destination = temp.second;
-            getPath(source, destination);
-        }
-    }*/
 
     //parameters: source node, destination node
     //returns: Stack<Pair<rows, columns>>; from first jump to destination(last) jump, does not include the source
@@ -626,9 +749,11 @@ public class Board{
         return movesMade;
     }
 
-    //returns all the available moves for this board.
+    /*
+    parameters: String[][] board, computer player or not
+    returns: Queue<Pair<Move, Move>> all the available moves for the board.
+     */
     //does a depth first search on every available move and stores the source Move and destination Move as a Pair
-    //returns: Vector<Pair<Move,Move>>
     private Queue<Pair<Move,Move>> getAllAvailableMoves(String[][]MMboard, boolean computer){
         int row = -1;
         int col = -1;
@@ -651,11 +776,12 @@ public class Board{
                 if(isValidNextMoveForMiniMax(row, col, MMboard) && !isEmptyStoneForMiniMax(row, col, MMboard)) {
                     //get all the destination nodes
                     Move sourceMove = new Move(row, col);
+
                     Vector<Move> destinationMoves = DFS(sourceMove, MMboard);
-                    System.out.println("source: "+sourceMove.row+" X "+sourceMove.col);
+                    //System.out.println("source: "+sourceMove.row+" X "+sourceMove.col);
                     for (int i = 0; i < destinationMoves.size(); i++) {
                         //now store all the destination Moves into the allMoves array
-                        System.out.println("destination: "+ destinationMoves.get(i).row + " X " + destinationMoves.get(i).col + " score: "+ destinationMoves.get(i).score);
+                        //System.out.println("destination: "+ destinationMoves.get(i).row + " X " + destinationMoves.get(i).col + " score: "+ destinationMoves.get(i).score);
                         allMoves.add(new Pair<>(sourceMove, destinationMoves.get(i)));
                     }
                 }
@@ -671,19 +797,25 @@ public class Board{
         return ((isValidForMiniMax(sR, sC, sR+2, sC, MMboard, new Move(-1,-1)))||(isValidForMiniMax(sR,sC,sR-2,sC, MMboard, new Move(-1,-1)))||(isValidForMiniMax(sR,sC, sR, sC+2, MMboard, new Move(-1,-1)))||isValidForMiniMax(sR,sC,sR,sC-2, MMboard, new Move(-1,-1)));
     }
 
-    //returns all available moves for the move parameter passed
+    /*
+    parameters: Move source, String[][] current Board
+    returns: Vector<Move> all possible destinations from source
+     */
+    //does Depth First Search to all the possible move nodes
     private Vector<Move> DFS(Move move, String [][]MMboard){
         Vector<Move> moves = new Vector<>();
         Stack<Move> stack = new Stack<>();
         ArrayList<Pair<Integer, Integer>> visited = new ArrayList<>();
         stack.push(move);
         boolean initial = true;
-        //DFS starts here
+
+        //DFS
         while (!stack.isEmpty()) {
             Move current = stack.pop();
             int r = current.row;
             int c = current.col;
 
+            //exclude the root move for the first time since it can be visited by one of its child moves
             if (!visited.contains(new Pair<>(r,c)) && !initial) {
                 visited.add(new Pair<>(r,c));
             }
@@ -693,22 +825,22 @@ public class Board{
             //west
             if (isValidForMiniMax(r, c, r, c - 2, MMboard, move)) {
                 Move temp = new Move( current.row, current.col-2);
-                //temp.score = current.score;
-                //there is a valid north move
+                //there is a valid west move
                 //change temp to that move with score updated
                 temp.score = current.score + 1;
+
                 //now check if that move was visited
+
                 //for the first generated children
                 if (!visited.contains(new Pair<>(temp.row, temp.col)) && current.parent == null) {
                     temp.parent = current;
-                    //visited.add(new Pair<>(temp.row, temp.col));
                     //if not visited yet, then push it into the stack
                     stack.push(temp);
                     moves.add(temp);
                 }
+                //we do not want to go back and forth with the same child and parent.
                 else if (!visited.contains(new Pair<>(temp.row, temp.col))&& (temp.row!=current.parent.row || temp.col!=current.parent.col)){
                     temp.parent = current;
-                    //visited.add(new Pair<>(temp.row, temp.col));
                     //if not visited yet, then push it into the stack
                     stack.push(temp);
                     moves.add(temp);
@@ -720,12 +852,10 @@ public class Board{
                 temp.score = current.score+1;
                 temp.parent = current;
                 if(!visited.contains(new Pair<>(temp.row, temp.col))&& current.parent==null) {
-                    //visited.add(new Pair<>(temp.row, temp.col));
                     stack.push(temp);
                     moves.add(temp);
                 }
                 else if (!visited.contains(new Pair<>(temp.row, temp.col))&&(temp.row!=current.parent.row || temp.col!=current.parent.col)){
-                    //visited.add(new Pair<>(temp.row, temp.col));
                     stack.push(temp);
                     moves.add(temp);
                 }
@@ -736,12 +866,10 @@ public class Board{
                 temp.score = current.score+1;
                 temp.parent = current;
                 if(!visited.contains(new Pair<>(temp.row, temp.col)) &&  current.parent==null) {
-                    //visited.add(new Pair<>(temp.row, temp.col));
                     stack.push(temp);
                     moves.add(temp);
                 }
                 else if (!visited.contains(new Pair<>(temp.row, temp.col))&& (temp.row!=current.parent.row || temp.col!=current.parent.col)) {
-                    //visited.add(new Pair<>(temp.row, temp.col));
                     stack.push(temp);
                     moves.add(temp);
                 }
@@ -752,93 +880,24 @@ public class Board{
                 temp.score = current.score+1;
                 temp.parent = current;
                 if(!visited.contains(new Pair<>(temp.row, temp.col))&&  current.parent==null) {
-                    //visited.add(new Pair<>(temp.row, temp.col));
                     stack.push(temp);
                     moves.add(temp);
                 }
                 else if (!visited.contains(new Pair<>(temp.row, temp.col))){
                     if (temp.row!=current.parent.row || temp.col!=current.parent.col) {
-                        //visited.add(new Pair<>(temp.row, temp.col));
                         stack.push(temp);
                         moves.add(temp);
                     }
                 }
             }
         }
-        //finished DFS
         return moves;
     }
 
-    //keep track of visited children in a certain board.
-    //Map<String[][], Vector<Move>> visitedChildren = new HashMap<>();
-    //
-    /*private Move getNextNode(Move move, String[][] tempBoard, boolean computer){
-        int row = move.row;
-        int col = move.col;
-        Move temp = null;
-
-        Vector<Move> moveVector = new Vector<>();
-        if(visitedChildren.containsKey(tempBoard)) {
-            moveVector = visitedChildren.get(tempBoard);
-        }
-        else{
-            visitedChildren.put(tempBoard, moveVector);
-        }
-
-        //visit every node of the board and check it's valid moves
-        while ((row < boardDimension-1 && row >=-1) || (col < boardDimension && col>=-1)){
-            if(row==-1) row++;
-            if (col < boardDimension-1 && col >= -1){
-                col++;
-            }
-            else if (row < boardDimension-1){
-                row++;
-                col = 0;
-            }
-            else continue; //we have the next row and col from the board
-
-            if((blackIsComputer && computer && isBlack(row,col)) || (whiteIsComputer && computer && isWhite(row, col)) || (!blackIsComputer && !computer && isBlack(row, col)) || (!whiteIsComputer && !computer && isWhite(row,col))){
-                //now check it's next move
-                //north
-                if (isValidForMiniMax(row, col, row - 2, col, tempBoard) && !visitedChildren.get(tempBoard).contains(new Move(row - 2, col))) {
-                    temp = new Move(row - 2, col);
-                    temp.score++;
-                    moveVector.add(temp);
-                    visitedChildren.put(tempBoard, moveVector);
-                    tempBoard = updateButtonForMiniMax(row, col, row - 2, col, tempBoard);
-                }
-                //east
-                else if (isValidForMiniMax(row, col, row, col + 2, tempBoard) && !visitedChildren.get(tempBoard).contains(new Move(row, col + 2))) {
-                    temp = new Move(row, col + 2);
-                    temp.score++;
-                    moveVector.add(temp);
-                    visitedChildren.put(tempBoard, moveVector);
-                    tempBoard = updateButtonForMiniMax(row, col, row, col + 2, tempBoard);
-                }
-                //south
-                else if (isValidForMiniMax(row, col, row + 2, col, tempBoard) && !visitedChildren.get(tempBoard).contains(new Move(row, col + 2))) {
-                    temp = new Move(row + 2, col);
-                    temp.score++;
-                    moveVector.add(temp);
-                    visitedChildren.put(tempBoard, moveVector);
-                    tempBoard = updateButtonForMiniMax(row, col, row + 2, col, tempBoard);
-                }
-                //west
-                else if (isValidForMiniMax(row, col, row, col - 2, tempBoard) && !visitedChildren.get(tempBoard).contains(new Move(row, col + 2))) {
-                    temp = new Move(row, col - 2);
-                    temp.score++;
-                    moveVector.add(temp);
-                    visitedChildren.put(tempBoard, moveVector);
-                    tempBoard = updateButtonForMiniMax(row, col, row, col - 2, tempBoard);
-                } else continue;
-            }
-            if(temp!=null){ //if there were no moves in the board then temp would remain null
-                return temp;
-            }
-        }
-        return null;
-    }*/
-
+    /*
+    parameters: source row, source column, destination row, destination column, current board array
+    returns: modified board array after making the moves from source to destination
+     */
     //makes the jump for the board passed.
     public String[][] updateButtonForMiniMax(int srcRow, int srcCol, int dstRow, int dstCol, String[][]board){
         //-------update the destination------
@@ -849,7 +908,7 @@ public class Board{
         board[srcRow][srcCol] = empty;
 
         //-------update the captured stone--------
-        int temp = game.slotsToRemove(srcRow, srcCol, dstRow, dstCol);
+        int temp = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
         int btnRow = temp/10;
         int btnCol = temp%10;
         board[btnRow][btnCol] = empty;
@@ -857,17 +916,24 @@ public class Board{
         return board;
     }
 
+    /*
+    parameters: source row, source column, destination row, destination column, current board array, source move from DFS
+    returns: boolean value
+     */
+    //checks if the move is valid or not
     public boolean isValidForMiniMax(int srcRow, int srcCol, int dstRow, int dstCol, String[][]board, Move move){
         int slot;
         //for black stones
         if (isBlack(dstRow, dstCol) && isBlack(srcRow, srcCol) && isTwoSlotsAway(srcRow, srcCol, dstRow, dstCol) && isInBoard(dstRow, dstCol)){
+            //---check if destination is an empty slot---
             if(isEmptyStoneForMiniMax(dstRow, dstCol, board)) {
                 //get the stone that is to be captured
-                slot = game.slotsToRemove(srcRow, srcCol, dstRow, dstCol);
+                slot = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
                 return (board[slot / 10][slot % 10].equals(white));
             }
+            //---for the cases in DFS when we reach the starting move from a child---
             else if (dstRow == move.row && dstCol == move.col){
-                slot = game.slotsToRemove(srcRow, srcCol, dstRow, dstCol);
+                slot = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
                 return (board[slot / 10][slot % 10].equals(white));
             }
             else return false;
@@ -875,11 +941,11 @@ public class Board{
         //for white stones
         else if (isWhite(dstRow,dstCol) && isWhite(srcRow, srcCol) && isTwoSlotsAway(srcRow,srcCol,dstRow,dstCol) && isInBoard(dstRow, dstCol)){
             if (isEmptyStoneForMiniMax(dstRow,dstCol, board)) {
-                slot = game.slotsToRemove(srcRow, srcCol, dstRow, dstCol);
+                slot = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
                 return (board[slot / 10][slot % 10].equals(black));
             }
             else if ( dstRow == move.row && dstCol == move.col){
-                slot = game.slotsToRemove(srcRow, srcCol, dstRow, dstCol);
+                slot = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
                 return (board[slot / 10][slot % 10].equals(black));
             }
             else return false;
@@ -888,6 +954,11 @@ public class Board{
         else return false;
     }
 
+    /*
+    parameters: destination row, destination column, current board array
+    returns: boolean value
+     */
+    //checks if the slot in the passed coordinate is empty or not
     public boolean isEmptyStoneForMiniMax(int dR, int dC, String[][]board){
 
         if (!isInBoard(dR, dC)){
@@ -898,22 +969,27 @@ public class Board{
             return (board[dR][dC].equals(empty));
         }
     }
+
+    /*
+    parameters: current board array
+    returns: boolean value
+     */
+    //checks if there is valid moves remaining for black stone in the current board
     public boolean checkRemainingMovesForBlackMiniMax(String [][] board) {
         int count = 0;
+        //go to every node in the board
         for (int i = 0; i < boardDimension; i++) {
             for (int j = 0; j < boardDimension; j++) {
                 //check if slot is black
                 if (isBlack(i,j) && !isEmptyStoneForMiniMax(i,j, board)) {
                     //check if any one of the neighbouring slots is valid for move
-                    //check up
+                    //check in north, south, east, west direction
                     if (isValidForMiniMax(i, j, i - 2, j,board, new Move(-1,-1))||isValidForMiniMax(i, j, i + 2, j,board, new Move(-1,-1))||isValidForMiniMax(i, j, i, j + 2, board, new Move(-1,-1))||isValidForMiniMax(i, j, i, j - 2, board, new Move(-1,-1))){
                         count++;
                     }
                 }
             }
         }
-        //System.out.print("Black valid moves: ");
-        //System.out.println(count);
         return (count!=0);
     }
 
@@ -929,761 +1005,6 @@ public class Board{
                 }
             }
         }
-        //System.out.print("White valid moves: ");
-        //System.out.println(count);
         return (count != 0);
     }
-
-
-
-
-    /*
-    //empties the queues  BFS,DFS, BestFirstSearch and tempQueue
-    public void clearQueues(){
-        while(!tempQueue.isEmpty()){
-            tempQueue.poll();
-        }
-        while(!BFSvisitedNodes.isEmpty()){
-            BFSvisitedNodes.poll();
-        }
-        while(!DFSvisitedNodes.isEmpty()){
-            DFSvisitedNodes.poll();
-        }
-        while(!BestFirstSearchList.isEmpty()) {
-            BestFirstSearchList.poll();
-        }
-        toThisButton = null;
-        fromThisButton = null;
-    }
-
-    //Breadth First Search
-    /*
-    clear tempQueue
-    initialize Pair(row, col), queue, visited List
-    add Pair(0,0) to queue
-
-    while(queue is not empty){
-        Pair current = queue.poll
-        if (not visited)
-            add current to BFSQueue
-            add current to visited
-
-        traverse to every valid node in the following order and if not visited then add it to queue
-        west
-        east
-        north
-        south
-    }
-
-    public void BFS(int row, int col){
-        if (row == 0 && col == 0 && !getBlackTurn()) {
-            row = 0;
-            col = 1;
-        }
-
-        while(!tempQueue.isEmpty()) tempQueue.poll();
-        Pair<Integer, Integer> pair = new Pair<>(row, col);
-        Queue<Pair<Integer, Integer>> queue = new LinkedList<>();
-        ArrayList<Pair<Integer, Integer>> visited = new ArrayList<>();
-        queue.add(pair);
-
-        while(!queue.isEmpty()){
-            //because all nodes should be visited and a tree is constructed as BFSVisitedNodes queue
-            Pair<Integer, Integer> current = queue.poll();
-
-            if (!visited.contains(current)) {
-                BFSvisitedNodes.add(current);
-                visited.add(current);
-                //System.out.println(current.first+"X"+current.second);
-            }
-
-            int r = current.first;
-            int c = current.second;
-
-            //west
-            if (!visited.contains(new Pair<>(r, c - 1)) && (isInBoard(r, c - 1))) {
-                queue.add(new Pair<>(r, c - 1));
-                //System.out.println(r+"X"+ c);
-            }
-            //east
-            if (!visited.contains(new Pair<>(r, c + 1)) && (isInBoard(r, c + 1))) {
-                queue.add(new Pair<>(r, c + 1));
-                //System.out.println(r+"X"+c);
-            }
-            //north
-            if (!visited.contains(new Pair<>(r - 1, c)) && (isInBoard(r - 1, c))) {
-                queue.add(new Pair<>(r - 1, c));
-                //System.out.println(r+"X"+c);
-            }
-            //south
-            if (!visited.contains(new Pair<>(r + 1, c)) && (isInBoard(r + 1, c))) {
-                queue.add(new Pair<>(r + 1, c));
-                //System.out.println(r+"X"+c);
-            }
-        }
-    }
-
-    //Depth First Search
-    /*
-
-    clear tempQueue
-    initialize Pair(row, col), stack, visited List
-    push Pair(0,0) to stack
-
-    while(queue is not empty){
-        Pair current = stack.pop
-        if (not visited)
-            add current to DFSQueue
-            add current to visited
-
-        traverse to every valid node in following order and if not visited then push it to stack
-        south
-        north
-        west
-        east
-
-    public void DFS(int row, int col){
-        if (row == 0 && col == 0 && !getBlackTurn()) {
-            row = 0;
-            col = 1;
-        }
-
-        while(!tempQueue.isEmpty()) tempQueue.poll();
-        Pair<Integer, Integer> pair = new Pair<>(row, col);
-        Stack<Pair<Integer, Integer>> stack = new Stack<>();
-        ArrayList<Pair<Integer, Integer>> visited = new ArrayList<>();
-        stack.push(pair);
-
-        while (!stack.isEmpty()) {
-            Pair<Integer, Integer> current = stack.pop();
-            if (!visited.contains(current)) {
-                DFSvisitedNodes.add(current);
-                visited.add(current);
-            }
-
-            int r = current.first;
-            int c = current.second;
-
-            //to agree with row major order
-            if (c == 5) c = 0;
-
-            if (!visited.contains(new Pair<>(r + 1, c)) && (isInBoard(r + 1, c))) {
-                stack.push(new Pair<>(r + 1, c));
-            }
-            if (!visited.contains(new Pair<>(r, c - 1)) && (isInBoard(r, c - 1))) {
-                stack.push(new Pair<>(r, c - 1));
-            }
-            if (!visited.contains(new Pair<>(r, c + 1)) && (isInBoard(r, c + 1))) {
-                stack.push(new Pair<>(r, c + 1));
-            }
-            if (!visited.contains(new Pair<>(r - 1, c)) && (isInBoard(r - 1, c))) {
-                stack.push(new Pair<>(r - 1, c));
-            }
-        }
-    }
-
-    private boolean sameBtn = false;
-    private Queue<Pair<Integer, Integer>> tempQueue = new LinkedList<>();
-
-    //parameters passed integer id from spinner id
-    //returns the next valid move from the BFS, DFS and BestFirstSearch queues
-
-    Queue<Pair<Integer, Integer>> queue = new LinkedList<>();
-    set queue with respect to the id passed. DFSVisitedNodes, BFSVisitedNodes, BestFirstSearchList
-    if (id != 2) do DFS and BFS search lists
-        if (not same button)
-            while (queue is not empty)
-            Pair<Integer, Integer> pair = queue.poll
-            get r as row, c as column from pair
-
-            if (the stone corresponds to the current player turn and the stone has next valid move)
-                call heuristic(pair) and update tempQueue, assign every child of pair to it
-                poll tempQueue as we do not need the first pair, its r,c itself
-                set sameBtn false;
-                if (tempQueue is not empty)
-                    set toThisButton to tempQueue.poll
-                    if(tempQueue is Empty()) set sameBtn false
-                    else set sameBtn true
-                    break out of while loop
-
-        else
-            if (tempQueue is not empty)
-                toThisButton = tempQueue.poll();
-                if(tempQueue.isEmpty()) set sameBtn false;
-                else set sameBtn true;
-            else set sameBtn false;
-
-    else do BestFirstSearch
-        while (queue is not empty)
-            Pair<Integer, Integer> pair = queue.poll();
-            int r = pair.first;
-            int c = pair.second;
-            if (the stone corresponds to the current player turn and the stone has next valid move) {
-                call heuristic(pair)
-                set fromThisButton as pair
-                set toTheseButtons as list returned by getAllButtons()
-                break the while loop
-
-    update the global queue for future use
-
-    public void getNextValidMove(int id) {
-        Queue<Pair<Integer, Integer>> queue = new LinkedList<>();
-        if (id == 0) {
-            queue = DFSvisitedNodes;
-        } else if (id == 1) {
-            queue = BFSvisitedNodes;
-        } else if (id == 2){
-            queue = BestFirstSearchList;
-        }
-
-        if (id != 2) {
-            //DFS and BFS searches
-            if (!sameBtn) {
-                while (!queue.isEmpty()) {
-                    Pair<Integer, Integer> pair = queue.poll();
-                    int r = pair.first;
-                    int c = pair.second;
-
-                    if (((getBlackTurn() && isBlack(r, c)) || (getWhiteTurn() && isWhite(r, c))) && isValidNextMove(r, c)) {
-                        heuristic(pair); //updates tempQueue, assigns every child of pair to it
-                        tempQueue.poll(); //the first pair is r,c itself
-                        sameBtn = false;
-                        if (!tempQueue.isEmpty()) {
-                            toThisButton = tempQueue.poll(); //the child of r,c
-                            if(tempQueue.isEmpty()) sameBtn = false;
-                            else sameBtn = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            else {
-                if (!tempQueue.isEmpty()) {
-                    toThisButton = tempQueue.poll();
-                    if(tempQueue.isEmpty()) sameBtn = false;
-                    else sameBtn = true;
-                } else sameBtn = false;
-            }
-        }
-
-        else {
-            //Best First Search
-            while (!queue.isEmpty()) {
-                Pair<Integer, Integer> pair = queue.poll();
-                int r = pair.first;
-                int c = pair.second;
-                if (((getBlackTurn() && isBlack(r, c)) || (getWhiteTurn() && isWhite(r, c))) && isValidNextMove(r, c)) {
-                    heuristic(pair);
-                    fromThisButton = pair;
-                    toTheseButtons = getAllButtons(1);
-                    break;
-                }
-
-                //for (int i = 0; i < toTheseButtons.size(); i++) System.out.println("dest Btns" + toTheseButtons);
-                //   if (((getBlackTurn() && isBlack(r, c)) || (getWhiteTurn() && isWhite(r, c))) && isValidNextMove(r, c)) {
-                //       heuristic(pair);
-                //       break;
-                //   }
-            }
-        }
-
-        //update the global queue for future use
-        if (id == 0) {
-            DFSvisitedNodes = queue;
-        } else if (id == 1) {
-            BFSvisitedNodes = queue;
-        } else if (id == 2){
-            BestFirstSearchList = queue;
-        }
-    }
-
-    //returns true even if source is an empty slot, but destination should also be empty
-    //everything else is similar to isValid function
-    public boolean isValidForHeuristic(int srcRow, int srcCol, int dstRow, int dstCol){
-        int slot;
-        //for black stones
-        if (isBlack(dstRow, dstCol) && (isBlack(srcRow, srcCol))){
-            if ((isTwoSlotsAway(srcRow, srcCol, dstRow, dstCol))&&(isEmptyStone(dstRow, dstCol))) {
-                slot = game.slotsToRemove(srcRow, srcCol, dstRow, dstCol);
-                return (board[slot / 10][slot % 10].equals(white));
-            }
-            else return false;
-        }
-
-        //for white stones
-        else if (isWhite(dstRow,dstCol) && isWhite(srcRow, srcCol)){
-
-            if(isTwoSlotsAway(srcRow,srcCol,dstRow,dstCol) && isEmptyStone(dstRow, dstCol)){
-
-                slot = game.slotsToRemove(srcRow, srcCol, dstRow, dstCol);
-                return (board[slot / 10][slot % 10].equals(black));
-            }
-            else return false;
-        }
-
-        //for empty slots
-        else return false;
-    }
-
-    //generate a Queue with head as the node with maximum heuristic
-
-        call BFS
-        initialise ArrayList<Pair<Integer, Integer>> examined = new ArrayList<>();
-        initialise maxScore = 0;
-        pass it to an arrayList
-        while(BFS list is not empty)
-            initialise Pair<Integer, Integer> current = BFSvisitedNodes.poll();
-            //add to arrayList only if it has a next valid move
-            if (current has valid moves)
-                add current to examined list
-
-        sort the array according to the heuristic, the one with highest heuristic will be at the top
-        now we have heuristic of every node which has a valid move
-        we have the highest score
-        set fromThisButton to first element of sorted examined list
-
-    public void BestFirstSearch(){
-        //call BFS
-        //use that tree to start with
-        BFS(0,0);
-        ArrayList<Pair<Integer, Integer>> examined = new ArrayList<>();
-        int maxScore = 0;
-        //pass it to an arrayList
-        while(!BFSvisitedNodes.isEmpty()){
-            Pair<Integer, Integer> current = BFSvisitedNodes.poll();
-            //add to arrayList only if it has a next valid move
-            if (isValidNextMove(current.first, current.second)) {
-                examined.add(current);
-            }
-        }
-        //sort the array according to the heuristic, the one with highest heuristic will be at the top
-        for (int i = 0; i<examined.size()-1;i++){
-            for(int j = 0; j<examined.size()-1;j++){
-                int value1 = heuristic(examined.get(j));
-                int value2 = heuristic(examined.get(j+1));
-                if (value2 > value1){
-                    Collections.swap(examined, j, j+1);
-                }
-                if (value1 > maxScore) maxScore = value1;
-                if (value2 > maxScore) maxScore = value2;
-            }
-        }
-        //now we have heuristic of every node which has a valid move
-        //we have the highest score
-        for (int i = 0 ;i<examined.size(); i++) {
-            BestFirstSearchList.add(examined.get(i));
-        }
-        fromThisButton = examined.get(0);
-        //just to get the origin and destination buttons
-        heuristic(examined.get(0));
-    }
-
-    private boolean goalNode = false;
-
-    //no parameters passed
-    //returns the list of Buttons from Source node to Goal node
-
-    check every child, set its boolean value
-    while (goal Node is not found)
-        go to every node that is true
-        call getList()
-        check if goalNode was visited by getList(), if true then break, else continue
-
-    private ArrayList<Pair<Integer, Integer>> getAllButtons(int type){
-        //traverse through the tree, goal node = toThisButton, source node = fromThisButton
-        //if the heuristic of source matches the count, then
-        int destinationRow;
-        int destinationCol;
-        int count;
-        //if it is Best First Search
-        if (type == 1) {
-            count = heuristic(fromThisButton);
-            destinationRow = toThisButton.first;
-            destinationCol = toThisButton.second;
-        }
-        //Branch and Bound
-        else {
-            count = BnBDepth;
-            if (count > heuristic(fromThisButton)) count = heuristic(fromThisButton);
-            destinationRow = BnBToThisButton.first;
-            destinationCol = BnBToThisButton.second;
-        }
-
-        ArrayList<Pair<Integer, Integer>> finalList = new ArrayList<>();
-
-        int r = fromThisButton.first;
-        int c = fromThisButton.second;
-
-        boolean northNode = false;
-        boolean southNode = false;
-        boolean eastNode = false;
-        boolean westNode = false;
-
-        if ((isInBoard(r + 2, c)) && (isValidForHeuristic(r, c, r + 2, c))){
-            southNode = true;
-        }
-        if ((isInBoard(r - 2, c)) && (isValidForHeuristic(r, c, r - 2, c))){
-            northNode = true;
-        }
-        if ((isInBoard(r, c - 2)) && (isValidForHeuristic(r, c, r, c - 2))){
-            westNode = true;
-        }
-        if ((isInBoard(r, c + 2)) && (isValidForHeuristic(r, c, r, c + 2))) {
-            eastNode = true;
-        }
-
-        while(!goalNode) {
-
-            if (southNode) {
-                finalList = getList(destinationRow, destinationCol, r+2, c, count);
-                if (goalNode) break;
-                else goalNode = false;
-            }
-
-            if (eastNode) {
-                finalList = getList(destinationRow, destinationCol, r, c+2, count);
-                if (goalNode) break;
-                else goalNode = false;
-            }
-
-            if (westNode) {
-                finalList = getList(destinationRow, destinationCol, r, c-2, count);
-                if (goalNode) break;
-                else goalNode = false;
-            }
-
-            if (northNode) {
-                finalList = getList(destinationRow, destinationCol, r-2, c, count);
-                if (goalNode) break;
-                else goalNode = false;
-            }
-
-        }
-        goalNode = false;
-        return finalList;
-    }
-
-    //returns the list of buttons from Source to Destination bounded by count
-    //DFS on the source passed
-    //DFS algorithm until destination row and column are matched with the current node and the count is equal to the parameter passed into
-    private ArrayList<Pair<Integer,Integer>> getList(int destinationRow, int destinationCol, int sourceRow, int sourceCol, int count){
-        int tempCount = 0;
-        //do DFS on EastNode until stack is empty
-        Stack <Pair<Integer, Integer>> stack = new Stack<>();
-        ArrayList <Pair <Integer, Integer>> tempList = new ArrayList<>();
-        ArrayList<Pair <Integer, Integer>> finalList = new ArrayList<>();
-
-        stack.push(new Pair<>(sourceRow, sourceCol));
-
-        while (!stack.isEmpty()) {
-            Pair<Integer, Integer> current = stack.pop();
-            int row = current.first;
-            int col = current.second;
-
-            if (!tempList.contains(current)) {
-                tempList.add(current);
-                tempCount++;
-                if (row == destinationRow && col == destinationCol && tempCount == count) {
-                    finalList = tempList;
-                    goalNode = true;
-                    break;
-                }
-            }
-            //if the goalButton is reached and temp count == score.
-            if (!tempList.contains(new Pair<>(row + 2, col)) && (isInBoard(row + 2, col)) && (isValidForHeuristic(row, col, row + 2, col))) {
-                stack.push(new Pair<>(row + 2, col));
-            }
-            if (!tempList.contains(new Pair<>(row - 2, col)) && (isInBoard(row - 2, col)) && (isValidForHeuristic(row, col, row - 2, col))) {
-                stack.push(new Pair<>(row - 2, col));
-            }
-            if (!tempList.contains(new Pair<>(row, col - 2)) && (isInBoard(row, col - 2)) && (isValidForHeuristic(row, col, row, col - 2))) {
-                stack.push(new Pair<>(row, col - 2));
-            }
-            if (!tempList.contains(new Pair<>(row, col + 2)) && (isInBoard(row, col + 2)) && (isValidForHeuristic(row, col, row, col + 2))) {
-                stack.push(new Pair<>(row, col + 2));
-            }
-        }
-        return finalList;
-    }
-
-    //private Map<Pair<Integer, Integer>, Integer> allScoreMap = new HashMap<>();
-    //private ArrayList<Pair<Integer, Integer>> HeuristicVisited = new ArrayList<>();
-
-    //Parameters passed Pair<Integer, Integer>
-    //returns the integer heuristic value
-
-    /*
-    perform DFS on the pair passed
-    initialise stack, arraylist of visited nodes, hashMap to keep the score of the current node
-    push pair into stack
-    put 0 into scoreMap of pair
-    now generate a tree with heuristics assigned to all of its nodes.
-
-        while (stack is not empty)
-            initialise Pair<Integer, Integer> current = stack.pop()
-            add current to tempQueue
-
-            if (visited does not contain current pair)
-                visited.add(current);
-
-            if (current stone corresponds to the player turn)
-                travers into every direction: east, west, north, south
-                if (visited does not contain the pair and its in board and has valid next move)
-                    if (scoreMap contains the pair and the score is greater) set the higher score
-                    else put the current pair into score map by increasing its score by one from its parent
-
-        now go through the map and get the highest score assigned pair
-        that pair is the destination button to be prompted to the user
-
-        set fromThisButton pair; //the pair whose heuristic was to be examined
-        set toThisButton as first element of sorted visited list
-
-        return scoreMap.get(visited.get(0));
-
-    private int heuristic(Pair<Integer, Integer> pair){
-        // do a dfs to this pair.
-        Stack<Pair<Integer, Integer>> stack = new Stack<>();
-        ArrayList<Pair<Integer, Integer>> visited = new ArrayList<>();
-
-        //hashMap to keep the score of the current node
-        Map<Pair<Integer, Integer>, Integer> scoreMap = new HashMap<>();
-        stack.push(pair);
-        //the parent node is initially of score zero
-        scoreMap.put(pair,0);
-        //generate a tree with heuristics assigned to all of its nodes.
-        while (!stack.isEmpty()) {
-            Pair<Integer, Integer> current = stack.pop();
-            tempQueue.add(current);
-            if (!visited.contains(current)) {
-                visited.add(current);
-                //HeuristicVisited.add(current);
-            }
-            int r = current.first;
-            int c = current.second;
-
-            if (((getBlackTurn() && isBlack(r, c)) || (getWhiteTurn() && isWhite(r, c)))) {
-                if (!visited.contains(new Pair<>(r, c - 2)) && (isInBoard(r, c - 2)) && isValidForHeuristic(r, c, r, c - 2)) {
-                    stack.push(new Pair<>(r, c - 2));
-                    if (scoreMap.containsKey(new Pair<>(r, c - 2))) {
-                        if ((scoreMap.get(current) + 1) > scoreMap.get(new Pair<>(r, c - 2))) {
-                            scoreMap.put(new Pair<>(r, c - 2), scoreMap.get(current) + 1);
-                            //allScoreMap.put(new Pair<>(r, c - 2), scoreMap.get(current) + 1);
-                        }
-                    } else {
-                        scoreMap.put(new Pair<>(r, c - 2), scoreMap.get(current) + 1);
-                        //allScoreMap.put(new Pair<>(r, c - 2), scoreMap.get(current) + 1);
-                    }
-                    /*int z = c - 2;
-                    int y = scoreMap.get(current) + 1;
-                    System.out.println(r + "X" + z + " has value " + y);
-                }
-
-                if (!visited.contains(new Pair<>(r + 2, c)) && (isInBoard(r + 2, c)) && (isValidForHeuristic(r, c, r + 2, c))) {
-                    stack.push(new Pair<>(r + 2, c));
-                    //if it is valid then put it in the scoreMap
-                    //its score must be 1 more than its parents
-                    //check if the scoreMap already contains the pair
-                    if (scoreMap.containsKey(new Pair<>(r + 2, c))) {
-                        //if yes, then get the higher value and assign that to the pair
-                        if ((scoreMap.get(current) + 1) > scoreMap.get(new Pair<>(r + 2, c))) {
-                            scoreMap.put(new Pair<>(r + 2, c), scoreMap.get(current) + 1);
-                            //allScoreMap.put(new Pair<>(r + 2, c), scoreMap.get(current) + 1);
-                        }
-                    } else {
-                        scoreMap.put(new Pair<>(r + 2, c), scoreMap.get(current) + 1);
-                        //allScoreMap.put(new Pair<>(r + 2, c), scoreMap.get(current) + 1);
-                    }
-                    /*int z = r + 2;
-                    int y = scoreMap.get(current) + 1;
-                    System.out.println(z + "X" + c + " has value " + y);
-                }
-                if (!visited.contains(new Pair<>(r, c + 2)) && (isInBoard(r, c + 2)) && isValidForHeuristic(r, c, r, c + 2)) {
-                    stack.push(new Pair<>(r, c + 2));
-                    //nextMove.push(new Pair<>(r,c+2));
-                    if (scoreMap.containsKey(new Pair<>(r, c + 2))) {
-                        if ((scoreMap.get(current) + 1) > scoreMap.get(new Pair<>(r, c + 2))) {
-                            scoreMap.put(new Pair<>(r, c + 2), scoreMap.get(current) + 1);
-                            //allScoreMap.put(new Pair<>(r, c + 2), scoreMap.get(current) + 1);
-                        }
-                    } else {
-                        scoreMap.put(new Pair<>(r, c + 2), scoreMap.get(current) + 1);
-                        //allScoreMap.put(new Pair<>(r, c + 2), scoreMap.get(current) + 1);
-                    }
-                    /*int z = c + 2;
-                    int y = scoreMap.get(current) + 1;
-                    System.out.println(r + "X" + z + " has value " + y);
-                }
-
-                if (!visited.contains(new Pair<>(r - 2, c)) && (isInBoard(r - 2, c)) && isValidForHeuristic(r, c, r - 2, c)) {
-                    stack.push(new Pair<>(r - 2, c));
-                    if (scoreMap.containsKey(new Pair<>(r - 2, c))) {
-                        if ((scoreMap.get(current) + 1) > scoreMap.get(new Pair<>(r - 2, c))) {
-                            scoreMap.put(new Pair<>(r - 2, c), scoreMap.get(current) + 1);
-                            //allScoreMap.put(new Pair<>(r - 2, c), scoreMap.get(current) + 1);
-                        }
-                    } else {
-                        scoreMap.put(new Pair<>(r - 2, c), scoreMap.get(current) + 1);
-                        //allScoreMap.put(new Pair<>(r - 2, c), scoreMap.get(current) + 1);
-                    }
-                    /*int z = r - 2;
-                    int y = scoreMap.get(current) + 1;
-                    System.out.println(z + "X" + c + " has value " + y)
-                }
-            }
-        }
-
-
-        for (int i = 0; i < visited.size(); i++) {
-            System.out.println(scoreMap.get(visited.get(i)));
-        }
-
-        //reaches this point when the DFS is complete and scores are assigned to its nodes
-        //now go through the map and get the highest score assigned pair
-        //that pair is the destination button to be prompted to the user
-        for (int j = 0; j < visited.size()-1; j++) {
-            for (int i = 0; i < visited.size()-1; i++) {
-                int value1 = scoreMap.get(visited.get(i));
-                int value2 = scoreMap.get(visited.get(i + 1));
-                if (value2 > value1) {
-                    Collections.swap(visited, i, i + 1);
-                }
-            }
-        }
-
-        //HeuristicVisited = visited;
-        //visited list is now sorted with maximum at the beginning
-
-        /*for (int i = 0; i < visited.size(); i++) {
-            System.out.println(scoreMap.get(visited.get(i)));
-        }
-
-        fromThisButton = pair; //the pair whose heuristic was to be examined
-        toThisButton = visited.get(0); //the pair that had the highest heuristic
-
-        //System.out.println("Max score: "+scoreMap.get(visited.get(0)));
-        //return the maximum score received.
-        return scoreMap.get(visited.get(0));
-    //}
-
-    public int BnBscore;
-    public int BnBDepth;
-    private Pair<Integer, Integer> BnBToThisButton;
-    //parameters passed integer
-
-    call BFS
-    initialise queue as BFSVisitedNodes, pair, stack, arraylist of visited nodes, hashMap to keep the score of the current node, examined array list
-    push pair into stack
-    put 0 into scoreMap of pair
-    now generate a tree with heuristics assigned to all of its nodes.
-
-        while (stack is not empty)
-            initialise Pair<Integer, Integer> current = stack.pop()
-            add current to tempQueue
-
-            if (visited does not contain current pair)
-                visited.add(current);
-
-            if (current stone corresponds to the player turn)
-                travers into every direction: east, west, north, south
-                if (visited does not contain the pair and its in board and has valid next move)
-                    if (scoreMap contains the pair and the score is greater) set the higher score
-                    else put the current pair into score map by increasing its score by one from its parent
-
-        now go through the map and get the highest score assigned pair
-        that pair is the destination button to be prompted to the user
-
-        set fromThisButton pair; //the pair whose heuristic was to be examined
-        set toThisButton as first element of sorted visited list
-
-
-    public void BranchAndBound(int depth){
-        BestFirstSearch();
-        BnBDepth = depth;
-        Queue<Pair<Integer,Integer>> queue = BestFirstSearchList;
-
-        Pair<Integer, Integer> pair = queue.poll();
-
-        Stack<Pair<Integer, Integer>> stack = new Stack<>();
-
-        ArrayList<Pair<Integer, Integer>> visited = new ArrayList<>();
-
-        Map<Pair<Integer, Integer>, Integer> scoreMap = new HashMap<>();
-
-        ArrayList<Pair<Integer, Integer>> examined = new ArrayList<>();
-
-        stack. push(pair);
-        scoreMap.put(pair, 0);
-        int temp = 0;
-
-        while (temp < depth) {
-            if (stack.isEmpty()) break;
-            else {
-                Pair<Integer, Integer> current = stack.pop();
-                if (!visited.contains(current)) {
-                    visited.add(current);
-                }
-                int r = current.first;
-                int c = current.second;
-
-                if (((getBlackTurn() && isBlack(r, c)) || (getWhiteTurn() && isWhite(r, c)))) {
-                    if (!visited.contains(new Pair<>(r + 2, c)) && (isInBoard(r + 2, c)) && (isValidForHeuristic(r, c, r + 2, c))) {
-                        stack.push(new Pair<>(r + 2, c));
-                        examined.add(new Pair<>(r + 2, c));
-                        if (scoreMap.containsKey(new Pair<>(r + 2, c)) && ((scoreMap.get(current) + 1) > scoreMap.get(new Pair<>(r + 2, c)))) {
-                            scoreMap.put(new Pair<>(r + 2, c), scoreMap.get(current) + 1);
-                        } else {
-                            scoreMap.put(new Pair<>(r + 2, c), scoreMap.get(current) + 1);
-                        }
-                    }
-                    if (!visited.contains(new Pair<>(r - 2, c)) && (isInBoard(r - 2, c)) && isValidForHeuristic(r, c, r - 2, c)) {
-                        stack.push(new Pair<>(r - 2, c));
-                        examined.add(new Pair<>(r - 2, c));
-                        if (scoreMap.containsKey(new Pair<>(r - 2, c)) && ((scoreMap.get(current) + 1) > scoreMap.get(new Pair<>(r - 2, c)))) {
-                            scoreMap.put(new Pair<>(r - 2, c), scoreMap.get(current) + 1);
-                        } else {
-                            scoreMap.put(new Pair<>(r - 2, c), scoreMap.get(current) + 1);
-                        }
-                    }
-                    if (!visited.contains(new Pair<>(r, c - 2)) && (isInBoard(r, c - 2)) && isValidForHeuristic(r, c, r, c - 2)) {
-                        stack.push(new Pair<>(r, c - 2));
-                        examined.add(new Pair<>(r, c - 2));
-                        if (scoreMap.containsKey(new Pair<>(r, c - 2)) && ((scoreMap.get(current) + 1) > scoreMap.get(new Pair<>(r, c - 2)))) {
-                            scoreMap.put(new Pair<>(r, c - 2), scoreMap.get(current) + 1);
-                        } else {
-                            scoreMap.put(new Pair<>(r, c - 2), scoreMap.get(current) + 1);
-                        }
-                    }
-                    if (!visited.contains(new Pair<>(r, c + 2)) && (isInBoard(r, c + 2)) && isValidForHeuristic(r, c, r, c + 2)) {
-                        stack.push(new Pair<>(r, c + 2));
-                        examined.add(new Pair<>(r, c + 2));
-                        if (scoreMap.containsKey(new Pair<>(r, c + 2)) && ((scoreMap.get(current) + 1) > scoreMap.get(new Pair<>(r, c + 2)))) {
-                            scoreMap.put(new Pair<>(r, c + 2), scoreMap.get(current) + 1);
-                        } else {
-                            scoreMap.put(new Pair<>(r, c + 2), scoreMap.get(current) + 1);
-                        }
-                    }
-                }
-                temp++;
-            }
-        }
-
-        for (int j = 0; j < examined.size()-1; j++) {
-            for (int i = 0; i < examined.size()-1; i++) {
-                int value1 = scoreMap.get(examined.get(i));
-                int value2 = scoreMap.get(examined.get(i + 1));
-                if (value2 > value1) {
-                    Collections.swap(examined, i, i + 1);
-                }
-            }
-        }
-
-        BnBscore = scoreMap.get(examined.get(0));
-        System.out.println("Score: " + BnBscore);
-        fromThisButton = pair;
-        System.out.println("Origin: " + fromThisButton);
-        BnBToThisButton = examined.get(0);
-        toTheseButtons = getAllButtons(2);
-        System.out.println("destination: " + toThisButton);
-    }*/
 }

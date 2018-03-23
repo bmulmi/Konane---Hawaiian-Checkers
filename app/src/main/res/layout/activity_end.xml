@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="edu.ramapo.bibhash.konane.view.EndActivity"
-    android:background="@android:color/holo_purple">
+    android:background="@drawable/backgroundboard"
+    tools:context="edu.ramapo.bibhash.konane.view.EndActivity">
 
     <TextView
         android:id="@+id/winnerName"
@@ -14,7 +14,7 @@
         android:layout_above="@+id/play"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="100dp"
-        android:fontFamily="sans-serif-condensed"
+        android:fontFamily="monospace"
         android:textAlignment="center"
         android:textColor="#FFFFFF"
         android:textSize="35sp"
@@ -29,6 +29,8 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="184dp"
+        android:background="?android:attr/colorButtonNormal"
+        android:fontFamily="casual"
         android:onClick="playAgain"
         android:text="Play Again" />
 
@@ -40,7 +42,10 @@
         android:layout_below="@+id/winnerName"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="78dp"
+        android:background="?android:attr/colorButtonNormal"
+        android:fontFamily="casual"
         android:onClick="exit"
         android:text="Quit" />
+    />
 
 </RelativeLayout>

@@ -1,8 +1,8 @@
 /************************************************************
  *  Name: Bibhash Mulmi                                     *
- * Project:  Project 2 Konane                               *
+ * Project:  Project 3 Two Player Konane                    *
  * Class:  CMPS 331 Artificial Intelligence                 *
- * Date:  03/07/2018                                        *
+ * Date:  03/23/2018                                        *
  ************************************************************/
 
 package edu.ramapo.bibhash.konane.view;
@@ -14,6 +14,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.app.Activity;
 import android.os.Environment;
+import android.text.method.ScrollingMovementMethod;
 import android.util.DisplayMetrics;
 import android.util.Pair;
 import android.view.Gravity;
@@ -39,11 +40,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Stack;
 
 import edu.ramapo.bibhash.konane.R;
 import edu.ramapo.bibhash.konane.model.Board;
+import edu.ramapo.bibhash.konane.model.Child;
 import edu.ramapo.bibhash.konane.model.Move;
 
 
@@ -61,7 +62,6 @@ public class MainActivity extends Activity {
     private int srcRow, srcCol, dstRow, dstCol;
 
     @Override
-    //check gameState and load game accordingly
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -69,7 +69,7 @@ public class MainActivity extends Activity {
         final Integer gameState = getIntent().getIntExtra("state", 1);
         final String boardSize = getIntent().getStringExtra("boardSize");
 
-        //if its a new game
+        //----------if its a new game----------
         if(gameState == 1) {
             final int boardDimension;
             if (boardSize.equals("6X6")) boardDimension = 6;
@@ -84,7 +84,7 @@ public class MainActivity extends Activity {
             updateScoreView();
         }
 
-        //if its a loaded game
+        //----------if its a loaded game----------
         else if (gameState == 2){
             String fileName = (String) getIntent().getSerializableExtra("file");
             try{
@@ -102,7 +102,7 @@ public class MainActivity extends Activity {
             }
         }
 
-        //set the score board by turn
+        //----------set the score board by turn----------
         if (gameBoard.getBlackTurn()){
             TextView pl = findViewById(R.id.blackplayer);
             pl.setBackgroundColor(Color.WHITE);
@@ -148,11 +148,12 @@ public class MainActivity extends Activity {
     private void setScoreText(boolean black, boolean white){
         TextView blackP = findViewById(R.id.blackplayer);
         TextView whiteP = findViewById(R.id.whiteplayer);
-        //if black is computer
+        //----------black is computer----------
         if(black && !white){
             blackP.setText("Black\n(Computer)");
             whiteP.setText("White\n(Human)");
         }
+        //----------white is computer----------
         else{
             blackP.setText("Black\n(Human)");
             whiteP.setText("White\n(Computer)");
@@ -173,94 +174,140 @@ public class MainActivity extends Activity {
     public void pruneCheckboxClicked( View view){
         boolean checked = ((CheckBox) view).isChecked();
         if (checked){
-            //makeToast("You checked");
             prune = true;
         }
 
         else {
-            //makeToast("You unchecked");
             prune = false;
         }
-        //gameBoard.setPrune(prune);
     }
 
+    private boolean calledMinimax = false;
     private int plyCutOff;
     //On Click Listener for ply Enter button
     //takes the input from the player for the ply cut-off and passes it to the Board Class
     //also prompts the user the moves of computer by animation.
     public void plyEnter(View view){
-        //get the value entered as string
+        clearBackground();
+        //----------get the value entered as string----------
         EditText cutOff = findViewById(R.id.plyCutoff);
         String value = cutOff.getText().toString();
-        //no value entered
+        //----------no value entered----------
         if (value.equals("")){
-            //set plycutoff as the highest value
+            //---set plycutoff as the highest value---
             plyCutOff = Integer.MAX_VALUE;
             makeToast("Ply Cut-off is max.");
         }
-        //value entered
+        //----------value entered----------
         else {
             plyCutOff = Integer.parseInt(value);
         }
-        //this used to be in the if statement and ply-cutoff was null if "" was entered
-        //Computer's turn
+
+        //----------if its Computer's turn then animate the moves----------
         if ((gameBoard.getBlackTurn() && gameBoard.getIsBlackComputer()) || (gameBoard.getWhiteTurn() && gameBoard.getIsWhiteComputer())) {
             makeToast("Ply Cut-off entered: " + plyCutOff);
+            calledMinimax = true;
             gameBoard.getMinimaxMoves(plyCutOff, prune, true);
             //---bestMove is updated---
             //---get the source---
             Pair<Move, Move> temp = gameBoard.bestMove;
+
+            //---handle the null exception---
+            while (temp==null){
+                gameBoard.getMinimaxMoves(plyCutOff, prune, true);
+                temp = gameBoard.bestMove;
+            }
+
             int sourceRow = temp.first.row;
             int sourceCol = temp.first.col;
-            int tempId = sourceRow * 10 + sourceCol;
+
+            int tempId = (sourceRow+1) * 10 + (sourceCol+1);
+
             ImageView btn = findViewById(tempId);
+
+            //---null object reference handler---
+            if (btn==null){
+                System.out.println("exception handled!!! on button with ID: " + tempId);
+                return;
+            }
+
             animateButtons(btn);
             int score = 0;
+
             //---get the destinations---
             Stack<Pair<Integer, Integer>> jumps = gameBoard.getPath(temp.first, temp.second);
+
             //---animate every one of them---
             while (!jumps.isEmpty()) {
                 score++;
                 Pair<Integer, Integer> j = jumps.pop();
-                tempId = j.first * 10 + j.second;
+                tempId = (j.first+1) * 10 + (j.second+1);
                 btn = findViewById(tempId);
                 animateButtons(btn);
             }
-            makeToast("Points Gained: "+score);
-            showAlgorithmTime();
+
+            //---get maximizer and minimizer's scores---
+            int maxSc = 0;
+            int minSc = 0;
+            Child tempChild = gameBoard.cld;
+            while ( tempChild != null){
+                maxSc += tempChild.maximizerScore;
+                minSc += tempChild.minimizerScore;
+                tempChild = tempChild.bestChild;
+            }
+
+            String str = "Points Gained Computer: " + maxSc + "\nPoints Gained Human: " + minSc +"\nImmediate jumps: " + score;
+            showAlgorithmTime(str);
         }
-        //human's turn
+        //----------human's turn----------
         else makeToast("ply Cut-off: " + plyCutOff + " entered for human.");
     }
 
-    //let the computer make the move
+    //go ahead button for computer to make the move(s)
     public void goButton(View view){
-        //System.out.println("black: " + gameBoard.getBlackTurn());
+
+        if (!calledMinimax) {
+            gameBoard.getMinimaxMoves(plyCutOff, prune, true);
+        }
+
+        //----------computer's turn and same player is computer----------
         if ((gameBoard.getBlackTurn() && gameBoard.getIsBlackComputer()) || (gameBoard.getWhiteTurn() && gameBoard.getIsWhiteComputer())) {
-            //computer's turn and same player is computer
+
+            calledMinimax = false;
+
             Pair<Move, Move> temp = gameBoard.bestMove;
+
             int sourceRow = temp.first.row;
             int sourceCol = temp.first.col;
-            int tempId = sourceRow * 10 + sourceCol;
+
+            int tempId = (sourceRow+1) * 10 + (sourceCol+1);
+
             ImageView sourceBtn = findViewById(tempId);
+
             //---get the destinations---
             Stack<Pair<Integer, Integer>> jumps = gameBoard.getPath(temp.first, temp.second);
             int score = 0;
-            //---animate every one of them---
+
+            //---make every move---
             while (!jumps.isEmpty()) {
                 score++;
                 Pair<Integer, Integer> j = jumps.pop();
-                tempId = j.first * 10 + j.second;
+
+                tempId = (j.first+1) * 10 + (j.second+1);
                 ImageView destinationBtn = findViewById(tempId);
+
                 makeMove(sourceBtn, destinationBtn);
                 sourceBtn = destinationBtn;
             }
+
             //---update the score---
-            if (gameBoard.getBlackTurn()) gameBoard.updateBlackScoreComputer(score);
-            else gameBoard.updateWhiteScoreComputer(score);
+            if (gameBoard.getBlackTurn()) gameBoard.updateBlackScore(score);
+            else gameBoard.updateWhiteScore(score);
             updateScoreView();
+
             //---after it makes all the moves---change players---
             changePlayer();
+
             //---check if the next player has remaining moves---
             //---if not change player again---
             if((gameBoard.getWhiteTurn()) && !gameBoard.checkRemainingMovesForWhite()){
@@ -271,51 +318,91 @@ public class MainActivity extends Activity {
                 changePlayer();
                 makeToast("No remaining moves Black");
             }
-            if(!gameBoard.checkRemainingMovesForBlack() && !gameBoard.checkRemainingMovesForWhite()){
+
+            //---no remaining moves for both stones---
+            if (!gameBoard.checkRemainingMovesForBlack() && !gameBoard.checkRemainingMovesForWhite()){
                 declareWinner();
             }
         }
+        //----------Human's turn----------
         else makeToast("Its your turn.");
-        //makeToast("you pressed go.");
-
     }
 
+    //animate the best move for human
     public void hintMove(View view) {
-        //human's turn
+        clearBackground();
+
+        //----------validate human's turn----------
         if ((gameBoard.getBlackTurn() && gameBoard.getIsWhiteComputer()) || (gameBoard.getWhiteTurn() && gameBoard.getIsBlackComputer())) {
             gameBoard.getMinimaxMoves(plyCutOff, prune, false);
             //---bestMove is updated---
             //---get the source---
+
             Pair<Move, Move> temp = gameBoard.bestMove;
+
+            //handle the null exception
+            while (temp==null){
+                gameBoard.getMinimaxMoves(plyCutOff, prune, false);
+                temp = gameBoard.bestMove;
+            }
+
             int sourceRow = temp.first.row;
             int sourceCol = temp.first.col;
-            int tempId = sourceRow*10+sourceCol;
+
+            int tempId = (sourceRow+1)*10+(sourceCol+1);
+
             ImageView btn = findViewById(tempId);
+
+            //---null object reference handler---
+            if (btn==null){
+                System.out.println("exception handled!!! on button with ID: " + tempId);
+                return;
+            }
+
             animateButtons(btn);
+
             int score = 0;
             //---get the destinations---
             Stack<Pair<Integer, Integer>> jumps = gameBoard.getPath(temp.first, temp.second);
+
             //---animate every one of them---
             while (!jumps.isEmpty()) {
                 score++;
                 Pair<Integer, Integer> j = jumps.pop();
-                tempId = j.first * 10 + j.second;
+                tempId = (j.first+1) * 10 + (j.second+1);
                 btn = findViewById(tempId);
                 animateButtons(btn);
             }
-            makeToast("Points Gained: "+score);
-            showAlgorithmTime();
+
+            //---get maximizer's and minimizer's scores---
+            int maxSc = 0;
+            int minSc = 0;
+            Child tempChild = gameBoard.cld;
+            while ( tempChild != null){
+                maxSc += tempChild.maximizerScore;
+                minSc += tempChild.minimizerScore;
+                tempChild = tempChild.bestChild;
+            }
+
+            //makeToast("Points Gained Human: "+ gameBoard.MaximizerScore);
+            //makeToast("Points Gained Computer: " +gameBoard.MinimizerScore);
+            //makeToast("Immediate jumps: " +score);
+            //makeToast("Maximizer: "+gameBoard.bestState.maximizerScore + "\nMinimizer: " + gameBoard.bestState.minimizerScore);
+            String str = "Points Gained Human: "+ maxSc + "\nPoints Gained Computer: " + minSc + "\nImmediate jumps: " +score;
+            showAlgorithmTime(str);
         }
-        //computer's turn
+        //----------Computer's turn----------
         else makeToast("Its Computer's turn!");
     }
 
-    private void showAlgorithmTime(){
+    //shows the algorithm time, and scores generated
+    private void showAlgorithmTime(String str){
         double time = gameBoard.getAlgorithmTime();
         TextView timer = findViewById(R.id.log);
+        timer.setMovementMethod(new ScrollingMovementMethod());
         String text = "Time taken: ";
         text += time;
-        text += " seconds.";
+        text += " milliseconds.\n" + str;
         timer.setText(text);
     }
 
@@ -391,8 +478,10 @@ public class MainActivity extends Activity {
                 ImageView button = new ImageView(this);
                 button.setAdjustViewBounds(true); //to let the imageView adjust the drawable aspect ratios
                 button.setLayoutParams(p);
-
-                int id = i*10+j;
+                //-------------made changes here-------------------
+                int i_ = i+1;
+                int j_ = j+1;
+                int id = i_*10+j_;
                 button.setId(id);
 
                 button.setMaxWidth(width);
@@ -431,17 +520,17 @@ public class MainActivity extends Activity {
                            srcCol = sourceRowCol.second;
                            //System.out.println(srcRow+""+srcCol);
 
-                           //black stone's turn but black is computer
-                           if (gameBoard.getBlackTurn()  && gameBoard.getIsBlackComputer() && gameBoard.isBlack(srcRow,srcCol)){
-                               makeToast("WRONG STONE");
+                           //black is computer, black's turn, but user tries to press the stone
+                           if (gameBoard.getIsBlackComputer() && gameBoard.getBlackTurn()){
+                               makeToast("Its Computer's turn");
                                click = 0;
                                sourceClick.setBackgroundColor(0);
                                clearBackground();
                            }
 
-                           //white stone's turn and white is computer
-                           if (gameBoard.getWhiteTurn() && gameBoard.getIsWhiteComputer() && gameBoard.isWhite(srcRow, srcCol) ){
-                               makeToast("WRONG STONE");
+                           //white is computer, white's turn, but user tries to press the stone
+                           if (gameBoard.getIsWhiteComputer() && gameBoard.getWhiteTurn()){
+                               makeToast("Its Computer's turn");
                                click = 0;
                                sourceClick.setBackgroundColor(0);
                                clearBackground();
@@ -461,9 +550,9 @@ public class MainActivity extends Activity {
                                makeMove(sourceClick, destinationClick);
                                sourceClick.setBackgroundColor(0);
                                destinationClick.setBackgroundColor(0);
-                               //---update scores accordingly---
-                               if (gameBoard.getBlackTurn()) gameBoard.updateBlackScore();
-                               else gameBoard.updateWhiteScore();
+                               //---update scores by one---
+                               if (gameBoard.getBlackTurn()) gameBoard.updateBlackScore(1);
+                               else gameBoard.updateWhiteScore(1);
                                updateScoreView();
                                //---check for valid next moves---
                                if (gameBoard.isValidNextMove(dstRow, dstCol)) {
@@ -524,14 +613,6 @@ public class MainActivity extends Activity {
         temp[0] = dm.widthPixels;
         temp[1] = dm.heightPixels;
         return temp;
-        /*
-        int newWidth = width / gameBoard.getBoardDimension();
-        int newHeight = height / gameBoard.getBoardDimension();
-
-        Drawable blackDrawable = getResources().getDrawable(R.drawable.black);
-        Bitmap bitmap = ((BitmapDrawable) blackDrawable).getBitmap();
-        Drawable d = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true));
-        */
     }
 
     //parameters used: Pair<integer, integer>
@@ -562,16 +643,6 @@ public class MainActivity extends Activity {
         //animation.setRepeatMode(Animation.REVERSE);
         source.startAnimation(animation);
     }
-
-    /*private void animateButtons (ImageView source, ImageView destination){
-        destination.setBackgroundColor(Color.YELLOW);
-        animation.setDuration(1000);
-        animation.setInterpolator(new LinearInterpolator());
-        animation.setRepeatCount(0);
-        //animation.setRepeatMode(Animation.REVERSE);
-        source.startAnimation(animation);
-        destination.startAnimation(animation);
-    }*/
 
     //stops the button animations
     //parameters passed ImageView object
@@ -604,6 +675,8 @@ public class MainActivity extends Activity {
         Intent intent = new Intent(MainActivity.this,EndActivity.class);
         intent.putExtra("player1Score", gameBoard.getBlackScore());
         intent.putExtra("player2Score", gameBoard.getWhiteScore());
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        finishAffinity();
         startActivity(intent);
     }
 
@@ -758,7 +831,7 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
 
-        finish();
+        //finish();
         System.exit(0);
     }
 
@@ -794,29 +867,5 @@ public class MainActivity extends Activity {
             }
             i++;
         }
-        //---set up the alert dialog---
-        /*AlertDialog.Builder prompt = new AlertDialog.Builder(this);
-        prompt.setTitle("Enter Name");
-
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-
-        prompt.setView(input);
-        prompt.setPositiveButton("Save", new DialogInterface.OnClickListener() {
-            private String fn;
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                fn = input.getText().toString();
-
-            }
-        });
-        prompt.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-        prompt.show();
-        return fileN;*/
     }
 }

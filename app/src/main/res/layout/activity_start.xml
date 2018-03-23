@@ -4,22 +4,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="edu.ramapo.bibhash.konane.view.StartActivity"
-    android:background="@android:color/holo_purple">
+    android:background="@drawable/backgroundboard"
+    tools:context="edu.ramapo.bibhash.konane.view.StartActivity">
 
     <TextView
         android:id="@+id/logo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:layout_width="300dp"
+        android:layout_height="80dp"
+        android:layout_below="@+id/imageView10"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="119dp"
+        android:layout_marginTop="19dp"
+        android:background="@drawable/boardback"
+        android:fontFamily="serif-monospace"
+        android:gravity="center_vertical"
         android:text="KONANE"
         android:textAlignment="center"
-        android:textColor="#8A0808"
-        android:textSize="70sp"
+        android:textColor="#e2a14a"
+        android:textSize="60sp"
         android:textStyle="bold"
-        android:fontFamily="sans-serif-condensed"
         android:visibility="visible" />
 
     <Button
@@ -30,6 +32,8 @@
         android:layout_below="@+id/logo"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="39dp"
+        android:background="?android:attr/colorButtonNormal"
+        android:fontFamily="casual"
         android:onClick="newGame"
         android:text="New Game"
         android:visibility="visible" />
@@ -42,6 +46,8 @@
         android:layout_below="@+id/newgame"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="31dp"
+        android:background="?android:attr/colorButtonNormal"
+        android:fontFamily="casual"
         android:onClick="resume"
         android:text="Load Game" />
 
@@ -49,13 +55,12 @@
         android:id="@+id/sublogo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/resume"
-        android:layout_alignStart="@+id/newgame"
-        android:layout_marginBottom="75dp"
-        android:fontFamily="sans-serif-condensed"
+        android:layout_below="@+id/logo"
+        android:layout_centerHorizontal="true"
+        android:fontFamily="serif"
         android:text="Hawaiian Checkers"
         android:textAlignment="center"
-        android:textColor="#000000"
+        android:textColor="#FFFFFF"
         android:textSize="20sp"
         android:visibility="visible" />
 
@@ -63,9 +68,10 @@
         android:id="@+id/imageView"
         android:layout_width="25dp"
         android:layout_height="25dp"
+        android:layout_alignLeft="@+id/logo"
         android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/logo"
         android:layout_marginTop="63dp"
-        android:layout_toStartOf="@+id/logo"
         android:src="@drawable/black" />
 
     <ImageView
@@ -83,14 +89,6 @@
         android:layout_above="@+id/imageView7"
         android:layout_alignStart="@+id/imageView"
         android:src="@drawable/white" />
-
-    <ImageView
-        android:id="@+id/imageView5"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:layout_alignTop="@+id/imageView3"
-        android:layout_toStartOf="@+id/imageView3"
-        android:src="@drawable/black" />
 
     <ImageView
         android:id="@+id/imageView7"
@@ -200,7 +198,8 @@
         android:id="@+id/imageView20"
         android:layout_width="25dp"
         android:layout_height="25dp"
-        android:layout_alignStart="@+id/imageView"
+        android:layout_alignLeft="@+id/logo"
+        android:layout_alignStart="@+id/logo"
         android:layout_below="@+id/resume"
         android:src="@drawable/black" />
 
@@ -248,8 +247,9 @@
         android:id="@+id/imageView26"
         android:layout_width="25dp"
         android:layout_height="25dp"
-        android:layout_below="@+id/imageView25"
-        android:layout_toEndOf="@+id/logo"
+        android:layout_alignEnd="@+id/logo"
+        android:layout_alignRight="@+id/logo"
+        android:layout_alignTop="@+id/imageView25"
         android:src="@drawable/white" />
 
     <ImageView
@@ -282,6 +282,15 @@
         android:layout_height="25dp"
         android:layout_above="@+id/imageView27"
         android:layout_alignStart="@+id/imageView28"
+        android:src="@drawable/black" />
+
+    <ImageView
+        android:id="@+id/imageView5"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_alignBottom="@+id/imageView3"
+        android:layout_toLeftOf="@+id/imageView"
+        android:layout_toStartOf="@+id/imageView"
         android:src="@drawable/black" />
 
 </RelativeLayout>

@@ -11,4 +11,31 @@
 
 3/16/2018:
 - added private boolean computerPlays to the player class to set the stone's player as computer(true) or human(false)
--
+- worked on DFS, to get all the possible moves. 1Hr
+- Introduced a new object class Move that stores the row, col coordinates of the Move, its current score, and its parent move. 1 Hr
+
+3/17/2018:
+- Modified DFS. Stored the Moves as Pair<source, destination> in Vector. 3 Hrs
+- worked on getting the path from the source the destination. 2.5 Hrs
+
+3/18/2018:
+- worked on making the move from the moves received from DFS by using the getPath function. Just needed to pass the board array into the previous makeMove function. 1 Hr
+- generated the algorithm of MiniMax. 3.5 Hrs
+- Coded the Minimax algorith. Failed. 3 Hrs
+
+3/19/2018:
+- Found the bug in minimax, was passing board array with the same reference. Introduced a function to copy the string array so that the original board would not be modified. 1Hr
+- Changed parts of code where Move objects were referenced as same objects. Introduced a new public function in Move class that clones the Move. 2.5 Hrs
+- Worked on MiniMax Algorithm. Worked! 3 Hrs
+- Added getAlgorithmTime function to get the algorithm time. 0.5 Hr
+
+3/21/2018:
+- Added Alpha Beta Pruning into MiniMax Algorithm. 1 Hr
+- Worked on storing the total scores of the maximizer and minimizer in the path that Minimax followed. 2 Hrs
+- Worked on exiting the app once saved button is pressed. 1 Hr
+
+3/22/2018:
+- Worked on getting the scores of maximizer and minimizer from the path returned by the MiniMax algorithm. Passed maximizer's and minimizer's scores into the recursive function. Did not work. 3 Hrs
+- Created a new class Child that would keep the record of the best child of a move, along with the maximizer's and minimizer's scores. Algorithm runs successfully. 2.5 Hrs
+
+

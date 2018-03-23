@@ -1,8 +1,8 @@
 /************************************************************
  *  Name: Bibhash Mulmi                                     *
- * Project:  Project 2 Konane                               *
+ * Project:  Project 3 Two Player Konane                    *
  * Class:  CMPS 331 Artificial Intelligence                 *
- * Date:  03/07/2018                                        *
+ * Date:  03/23/2018                                        *
  ************************************************************/
 
 package edu.ramapo.bibhash.konane.view;
@@ -31,13 +31,13 @@ public class EndActivity extends Activity {
         String winnerName;
 
         if (pl1score > pl2score){
-            winnerName = "Player 1 \n Black Stone \n Wins";
+            winnerName = "Player 1 \nBlack Stone \nWINS";
         }
         else if(pl2score > pl1score){
-            winnerName = "Player 2 \n White Stone \n Wins";
+            winnerName = "Player 2 \nWhite Stone \nWINS";
         }
         else{
-            winnerName = "No One Wins \n Its a Draw";
+            winnerName = "No One Wins \nIts a \nDRAW";
         }
         TextView text = findViewById(R.id.winnerName);
         text.setText(winnerName);
@@ -48,13 +48,15 @@ public class EndActivity extends Activity {
     public void playAgain(View view){
         Intent intent = new Intent(EndActivity.this, StartActivity.class);
         intent.putExtra("state", 1);
+        finishAffinity();
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
     }
 
     //OnClick Function
     //kills the process and exits the app
     public void exit(View view){
-        android.os.Process.killProcess(android.os.Process.myPid());
+        finishAffinity();
         System.exit(0);
     }
 }

@@ -1,8 +1,8 @@
-/***********************************************************
- * Name: Bibhash Mulmi                                      *
- * Project:  Project 1 Konane                               *
+/************************************************************
+ *  Name: Bibhash Mulmi                                     *
+ * Project:  Project 3 Two Player Konane                    *
  * Class:  CMPS 331 Artificial Intelligence                 *
- * Date:  02/16/2018                                        *
+ * Date:  03/23/2018                                        *
  ************************************************************/
 
 package edu.ramapo.bibhash.konane.model;

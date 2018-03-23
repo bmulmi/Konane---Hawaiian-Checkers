@@ -1,8 +1,8 @@
 /************************************************************
  *  Name: Bibhash Mulmi                                     *
- * Project:  Project 2 Konane                               *
+ * Project:  Project 3 Two Player Konane                    *
  * Class:  CMPS 331 Artificial Intelligence                 *
- * Date:  03/07/2018                                        *
+ * Date:  03/23/2018                                        *
  ************************************************************/
 
 package edu.ramapo.bibhash.konane.view;
@@ -42,6 +42,8 @@ public class StartActivity extends Activity {
                 Intent intent = new Intent(StartActivity.this, MainActivity.class);
                 intent.putExtra("state", 1);
                 intent.putExtra("boardSize", boardSize);
+                //finishAffinity();
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
             }
         });
@@ -86,6 +88,7 @@ public class StartActivity extends Activity {
                 Intent intent = new Intent(StartActivity.this, MainActivity.class);
                 intent.putExtra("state", 2);
                 intent.putExtra("file", fileName);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
             }
         });

@@ -1,8 +1,8 @@
 /************************************************************
  *  Name: Bibhash Mulmi                                     *
- * Project:  Project 2 Konane                               *
+ * Project:  Project 3 Two Player Konane                    *
  * Class:  CMPS 331 Artificial Intelligence                 *
- * Date:  03/07/2018                                        *
+ * Date:  03/23/2018                                        *
  ************************************************************/
 package edu.ramapo.bibhash.konane.model;
 
@@ -26,10 +26,9 @@ public class Player {
         return turn;
     }
 
-    //mutator to set Player's score
-    //updates the score by 1 point every time
-    public void updateScore() {
-        score++;
+    //updates the score by value passed
+    public void updateScore(int scr) {
+        score += scr ;
     }
 
     //accessor of Player's score
@@ -37,7 +36,6 @@ public class Player {
         return score;
     }
 
-    public void updateScoreComputer(int val){score+=val;}
     //set the score of Player
     public void setScore(int s) {
         score = s;

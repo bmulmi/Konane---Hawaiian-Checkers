@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="edu.ramapo.bibhash.konane.view.MainActivity"
-    android:background="@android:color/holo_purple">
+    android:background="@drawable/backgroundboard"
+    tools:context="edu.ramapo.bibhash.konane.view.MainActivity">
 
     <LinearLayout
         android:id="@+id/scoreLayout"
@@ -49,7 +49,7 @@
                         android:layout_height="match_parent"
                         android:gravity="top|center_horizontal"
                         android:textAlignment="center"
-                        android:textColor="#000000"
+                        android:textColor="#FFFFFF"
                         android:textSize="20sp" />
                 </LinearLayout>
 
@@ -83,8 +83,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:gravity="top|center_horizontal"
-                        android:textColor="@android:color/white"
                         android:textAlignment="center"
+                        android:textColor="@android:color/white"
                         android:textSize="20sp" />
 
                 </LinearLayout>
@@ -142,7 +142,8 @@
                     android:layout_weight="1"
                     android:ems="1"
                     android:inputType="number"
-                    android:visibility="visible" />
+                    android:visibility="visible"
+                    android:textColor="#FFFFFF"/>
 
                 <Button
                     android:id="@+id/plyEnter"
@@ -154,7 +155,7 @@
                     android:onClick="plyEnter"
                     android:text="@android:string/ok"
                     android:textAlignment="center"
-                    android:textSize="9sp" />
+                    android:textSize="12sp" />
             </LinearLayout>
 
             <TextView
@@ -163,8 +164,10 @@
                 android:layout_height="30dp"
                 android:background="#000000"
                 android:text="log: "
-                android:textSize="15sp"
                 android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:maxLines="2"
+                android:scrollbars="vertical"
                 android:visibility="visible" />
 
         </LinearLayout>
@@ -231,30 +234,35 @@
             android:layout_width="75dp"
             android:layout_height="40dp"
             android:layout_marginLeft="13dp"
+            android:fontFamily="serif"
             android:onClick="goButton"
             android:text="Go" />
 
         <Button
             android:id="@+id/skip"
-            style="@android:style/Widget.Holo.Button.Small"
+            style="@android:style/Widget.Button.Small"
             android:layout_width="80dp"
             android:layout_height="40dp"
             android:layout_marginLeft="13dp"
             android:layout_marginStart="13dp"
-            android:textSize="12sp"
+            android:background="?android:attr/colorButtonNormal"
+            android:fontFamily="monospace"
             android:onClick="skipMove"
-            android:text="Skip Move" />
+            android:text="Skip Move"
+            android:textSize="10sp" />
 
         <Button
             android:id="@+id/hint"
-            style="@android:style/Widget.Holo.Button.Small"
+            style="@android:style/Widget.Button.Small"
             android:layout_width="80dp"
             android:layout_height="40dp"
             android:layout_marginEnd="13dp"
             android:layout_marginRight="13dp"
-            android:textSize="12sp"
+            android:background="?android:attr/colorButtonNormal"
+            android:fontFamily="monospace"
             android:onClick="hintMove"
             android:text="Hint Move"
+            android:textSize="10sp"
             android:visibility="visible" />
 
         <Button
@@ -262,6 +270,7 @@
             style="@android:style/Widget.DeviceDefault.Button"
             android:layout_width="75dp"
             android:layout_height="40dp"
+            android:fontFamily="serif"
             android:onClick="saveGame"
             android:text="Save" />
 
