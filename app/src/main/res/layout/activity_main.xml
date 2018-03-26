@@ -18,6 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:background="?android:attr/colorControlHighlight"
             android:orientation="horizontal">
 
             <LinearLayout
@@ -162,12 +163,11 @@
                 android:id="@+id/log"
                 android:layout_width="match_parent"
                 android:layout_height="30dp"
-                android:background="#000000"
-                android:text="log: "
-                android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:background="?android:attr/colorPressedHighlight"
                 android:maxLines="2"
                 android:scrollbars="vertical"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
                 android:visibility="visible" />
 
         </LinearLayout>
@@ -233,7 +233,7 @@
             style="@android:style/Widget.DeviceDefault.Button"
             android:layout_width="75dp"
             android:layout_height="40dp"
-            android:layout_marginLeft="13dp"
+            android:layout_marginStart="8dp"
             android:fontFamily="serif"
             android:onClick="goButton"
             android:text="Go" />
@@ -243,8 +243,8 @@
             style="@android:style/Widget.Button.Small"
             android:layout_width="80dp"
             android:layout_height="40dp"
-            android:layout_marginLeft="13dp"
-            android:layout_marginStart="13dp"
+            android:layout_marginLeft="9dp"
+            android:layout_marginStart="9dp"
             android:background="?android:attr/colorButtonNormal"
             android:fontFamily="monospace"
             android:onClick="skipMove"
@@ -256,8 +256,8 @@
             style="@android:style/Widget.Button.Small"
             android:layout_width="80dp"
             android:layout_height="40dp"
-            android:layout_marginEnd="13dp"
-            android:layout_marginRight="13dp"
+            android:layout_marginEnd="9dp"
+            android:layout_marginRight="9dp"
             android:background="?android:attr/colorButtonNormal"
             android:fontFamily="monospace"
             android:onClick="hintMove"

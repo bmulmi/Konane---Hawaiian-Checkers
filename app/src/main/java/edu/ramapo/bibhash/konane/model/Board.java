@@ -532,8 +532,6 @@ public class Board{
         }
 
         if (maximizer){
-            //int maxiTotalScore = 0;
-            //int miniTotalScore = 0;
             int bestHeuristic = Integer.MIN_VALUE;
             Pair<Move, Move> tempBest = new Pair<>(new Move(-1,-1), new Move(-1,-1));
             Child tempBestChild = new Child (MMboard, maxPoints, minPoints);
@@ -579,10 +577,8 @@ public class Board{
                     //set the returned child as the best child of current child
                     passedChild.bestChild = passingChild;
                     tempBestChild = passedChild;
-                    //maxiTotalScore = maxPoints;
                     tempBest = child;
                     bestHeuristic = tempHeuristic;
-                    //System.out.println("maximizer pts: " + maxiTotalScore);
                 }
 
                 MMboard = previousBoard;
@@ -606,14 +602,10 @@ public class Board{
             }
             bestMove = tempBest;
             cld = tempBestChild;
-            //MaximizerScore += maxiTotalScore;
-            //MinimizerScore = miniTotalScore;
             return bestHeuristic;
         }
         else{//minimizer
             int bestHeuristic = Integer.MAX_VALUE;
-            //int maxiTotalScore = 0;
-            //int miniTotalScore = 0;
             Pair<Move, Move>  tempBest = new Pair<>(new Move(-1,-1), new Move(-1,-1));
             Child tempBestChild = new Child (MMboard, maxPoints, minPoints);
             Queue<Pair<Move, Move>> allMoves = getAllAvailableMoves(MMboard, computer);
@@ -647,9 +639,6 @@ public class Board{
                     //set the current child's best child as the passed child
                     passedChild.bestChild = passingChild;
                     tempBestChild = passedChild;
-                    //miniTotalScore = minPoints;
-                    //maxiTotalScore += maxPoints;
-                    //System.out.println("minimizer's points: " + miniTotalScore);
                     tempBest = child;
                     bestHeuristic = tempHeuristic;
                 }
@@ -668,8 +657,6 @@ public class Board{
             }
             bestMove = tempBest;
             cld = tempBestChild;
-            //MinimizerScore += miniTotalScore;
-            //MaximizerScore = maxiTotalScore;
             return bestHeuristic;
         }
     }
@@ -776,12 +763,17 @@ public class Board{
                 if(isValidNextMoveForMiniMax(row, col, MMboard) && !isEmptyStoneForMiniMax(row, col, MMboard)) {
                     //get all the destination nodes
                     Move sourceMove = new Move(row, col);
-
-                    Vector<Move> destinationMoves = DFS(sourceMove, MMboard);
-                    //System.out.println("source: "+sourceMove.row+" X "+sourceMove.col);
+                    String[][]passingBoard = new String[boardDimension][boardDimension];
+                    copyBoard(passingBoard, MMboard);
+                    //clear the vectors
+                    destinationNodes.clear();
+                    Vector<Move> destinationMoves = DepthFirstSimluation(sourceMove, passingBoard);
+                    //Vector<Move> destinationMoves = DFS(sourceMove, MMboard);
+                    System.out.println("********************************************");
+                    System.out.println("source: "+sourceMove.row+" X "+sourceMove.col);
                     for (int i = 0; i < destinationMoves.size(); i++) {
                         //now store all the destination Moves into the allMoves array
-                        //System.out.println("destination: "+ destinationMoves.get(i).row + " X " + destinationMoves.get(i).col + " score: "+ destinationMoves.get(i).score);
+                        System.out.println("destination: "+ destinationMoves.get(i).row + " X " + destinationMoves.get(i).col + " score: "+ destinationMoves.get(i).score);
                         allMoves.add(new Pair<>(sourceMove, destinationMoves.get(i)));
                     }
                 }
@@ -794,7 +786,101 @@ public class Board{
     public boolean isValidNextMoveForMiniMax(int sR, int sC, String[][]MMboard){
         //just pass move(-1,-1) as a dummy move for now
         //we only need to see if the destination is empty slot or not
-        return ((isValidForMiniMax(sR, sC, sR+2, sC, MMboard, new Move(-1,-1)))||(isValidForMiniMax(sR,sC,sR-2,sC, MMboard, new Move(-1,-1)))||(isValidForMiniMax(sR,sC, sR, sC+2, MMboard, new Move(-1,-1)))||isValidForMiniMax(sR,sC,sR,sC-2, MMboard, new Move(-1,-1)));
+        return ((isValidForMiniMax(sR, sC, sR+2, sC, MMboard))||(isValidForMiniMax(sR,sC,sR-2,sC, MMboard))||(isValidForMiniMax(sR,sC, sR, sC+2, MMboard))||isValidForMiniMax(sR,sC,sR,sC-2, MMboard));
+    }
+
+    private Vector<Move>destinationNodes = new Vector<>();
+    private Vector<Move> DepthFirstSimluation(Move move, String[][]MMboard){
+        //---must have a valid next move---
+        if (isValidNextMoveForMiniMax(move.row, move.col, MMboard)){
+            //store this board
+            String[][] previousBoard = new String[boardDimension][boardDimension];
+            copyBoard(previousBoard, MMboard);
+
+            //check north
+            if(isValidForMiniMax(move.row, move.col, move.row-2, move.col, MMboard)){
+                //create this destination move
+                Move temp = new Move(move.row-2, move.col);
+                temp.score = move.score+1;
+                temp.parent = move;
+
+                //change the board array before you pass it
+                makeMoveForMiniMax(new Pair<>(move, temp), MMboard);
+
+                //recursively call the function again to expand every child of this node
+                DepthFirstSimluation(temp, MMboard);
+
+                //add this valid destination to the vector
+                destinationNodes.add(temp);
+
+                //restore the board
+                MMboard = previousBoard;
+            }
+            //check east
+            if(isValidForMiniMax(move.row, move.col, move.row, move.col+2, MMboard)){
+                //create this destination move
+                Move temp = new Move(move.row, move.col+2);
+                temp.score = move.score+1;
+                temp.parent = move;
+
+                //change the board array before you pass it
+                makeMoveForMiniMax(new Pair<>(move, temp), MMboard);
+
+                //recursively call the function again to expand every child of this node
+                DepthFirstSimluation(temp, MMboard);
+
+                //add this valid destination to the vector
+                destinationNodes.add(temp);
+
+                //restore the board
+                MMboard = previousBoard;
+            }
+            //check south
+            if(isValidForMiniMax(move.row, move.col, move.row+2, move.col, MMboard)){
+                //create this destination move
+                Move temp = new Move(move.row+2, move.col);
+                temp.score = move.score+1;
+                temp.parent = move;
+
+                //change the board array before you pass it
+                makeMoveForMiniMax(new Pair<>(move, temp), MMboard);
+
+                //recursively call the function again to expand every child of this node
+                DepthFirstSimluation(temp, MMboard);
+
+                //add this valid destination to the vector
+                destinationNodes.add(temp);
+
+                //restore the board
+                MMboard = previousBoard;
+            }
+            //check west
+            if(isValidForMiniMax(move.row,move.col, move.row, move.col-2, MMboard)){
+                //create this destination move
+                Move temp = new Move(move.row, move.col-2);
+                temp.score = move.score+1;
+                temp.parent = move;
+
+                //change the board array before you pass it
+                makeMoveForMiniMax(new Pair<>(move, temp), MMboard);
+
+                //recursively call the function again to expand every child of this node
+                DepthFirstSimluation(temp, MMboard);
+
+                //add this valid destination to the vector
+                destinationNodes.add(temp);
+
+                //restore the board
+                MMboard = previousBoard;
+            }
+            //---all moves checked---
+            return destinationNodes;
+        }
+        //---reaches the leaf node---
+        else { //no valid moves from this node
+            return destinationNodes;
+            //destinationNodes.add(move);
+        }
     }
 
     /*
@@ -802,6 +888,7 @@ public class Board{
     returns: Vector<Move> all possible destinations from source
      */
     //does Depth First Search to all the possible move nodes
+/*
     private Vector<Move> DFS(Move move, String [][]MMboard){
         Vector<Move> moves = new Vector<>();
         Stack<Move> stack = new Stack<>();
@@ -823,7 +910,7 @@ public class Board{
             initial = false;
 
             //west
-            if (isValidForMiniMax(r, c, r, c - 2, MMboard, move)) {
+            if (isValidForMiniMax(r, c, r, c - 2, MMboard)) {
                 Move temp = new Move( current.row, current.col-2);
                 //there is a valid west move
                 //change temp to that move with score updated
@@ -847,7 +934,7 @@ public class Board{
                 }
             }
             //south
-            if (isValidForMiniMax(r, c, r + 2, c, MMboard, move)) {
+            if (isValidForMiniMax(r, c, r + 2, c, MMboard)) {
                 Move temp = new Move( current.row+2, current.col);
                 temp.score = current.score+1;
                 temp.parent = current;
@@ -861,7 +948,7 @@ public class Board{
                 }
             }
             //east
-            if (isValidForMiniMax(r, c, r, c+2, MMboard, move)) {
+            if (isValidForMiniMax(r, c, r, c+2, MMboard)) {
                 Move temp = new Move( current.row, current.col+2);
                 temp.score = current.score+1;
                 temp.parent = current;
@@ -875,7 +962,7 @@ public class Board{
                 }
             }
             //north
-            if (isValidForMiniMax(r, c, r - 2, c, MMboard, move)) {
+            if (isValidForMiniMax(r, c, r - 2, c, MMboard)) {
                 Move temp = new Move( current.row-2, current.col);
                 temp.score = current.score+1;
                 temp.parent = current;
@@ -893,6 +980,7 @@ public class Board{
         }
         return moves;
     }
+*/
 
     /*
     parameters: source row, source column, destination row, destination column, current board array
@@ -921,7 +1009,7 @@ public class Board{
     returns: boolean value
      */
     //checks if the move is valid or not
-    public boolean isValidForMiniMax(int srcRow, int srcCol, int dstRow, int dstCol, String[][]board, Move move){
+    public boolean isValidForMiniMax(int srcRow, int srcCol, int dstRow, int dstCol, String[][]board){
         int slot;
         //for black stones
         if (isBlack(dstRow, dstCol) && isBlack(srcRow, srcCol) && isTwoSlotsAway(srcRow, srcCol, dstRow, dstCol) && isInBoard(dstRow, dstCol)){
@@ -932,10 +1020,10 @@ public class Board{
                 return (board[slot / 10][slot % 10].equals(white));
             }
             //---for the cases in DFS when we reach the starting move from a child---
-            else if (dstRow == move.row && dstCol == move.col){
+            /*else if (dstRow == move.row && dstCol == move.col){
                 slot = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
                 return (board[slot / 10][slot % 10].equals(white));
-            }
+            }*/
             else return false;
         }
         //for white stones
@@ -944,10 +1032,10 @@ public class Board{
                 slot = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
                 return (board[slot / 10][slot % 10].equals(black));
             }
-            else if ( dstRow == move.row && dstCol == move.col){
+            /*else if ( dstRow == move.row && dstCol == move.col){
                 slot = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
                 return (board[slot / 10][slot % 10].equals(black));
-            }
+            }*/
             else return false;
         }
         //for empty slots
@@ -982,9 +1070,7 @@ public class Board{
             for (int j = 0; j < boardDimension; j++) {
                 //check if slot is black
                 if (isBlack(i,j) && !isEmptyStoneForMiniMax(i,j, board)) {
-                    //check if any one of the neighbouring slots is valid for move
-                    //check in north, south, east, west direction
-                    if (isValidForMiniMax(i, j, i - 2, j,board, new Move(-1,-1))||isValidForMiniMax(i, j, i + 2, j,board, new Move(-1,-1))||isValidForMiniMax(i, j, i, j + 2, board, new Move(-1,-1))||isValidForMiniMax(i, j, i, j - 2, board, new Move(-1,-1))){
+                    if (isValidForMiniMax(i, j, i - 2, j,board)||isValidForMiniMax(i, j, i + 2, j,board)||isValidForMiniMax(i, j, i, j + 2, board)||isValidForMiniMax(i, j, i, j - 2, board)){
                         count++;
                     }
                 }
@@ -999,7 +1085,7 @@ public class Board{
         for (int i = 0; i < boardDimension; i++) {
             for (int j = 0; j < boardDimension; j++) {
                 if (isWhite(i,j) && !isEmptyStoneForMiniMax(i,j, board)) {
-                    if (isValidForMiniMax(i, j, i - 2, j, board, new Move(-1,-1)) || isValidForMiniMax(i, j, i + 2, j, board, new Move(-1,-1)) || isValidForMiniMax(i, j, i, j + 2, board, new Move(-1,-1)) || isValidForMiniMax(i, j, i, j - 2, board, new Move(-1,-1))) {
+                    if (isValidForMiniMax(i, j, i - 2, j, board) || isValidForMiniMax(i, j, i + 2, j, board) || isValidForMiniMax(i, j, i, j + 2, board) || isValidForMiniMax(i, j, i, j - 2, board)) {
                         count ++;
                     }
                 }

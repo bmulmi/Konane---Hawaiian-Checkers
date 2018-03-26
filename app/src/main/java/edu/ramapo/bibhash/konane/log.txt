@@ -38,4 +38,7 @@
 - Worked on getting the scores of maximizer and minimizer from the path returned by the MiniMax algorithm. Passed maximizer's and minimizer's scores into the recursive function. Did not work. 3 Hrs
 - Created a new class Child that would keep the record of the best child of a move, along with the maximizer's and minimizer's scores. Algorithm runs successfully. 2.5 Hrs
 
+3/23/2018:
+- Found a bug. Null object returned after calling minimax some while later. Fixed. 0.5 Hrs
+- DFS was not working correctly. Re-coded the DFS function. Successful. 3 Hrs
 

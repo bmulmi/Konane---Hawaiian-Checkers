@@ -18,6 +18,7 @@ import android.text.method.ScrollingMovementMethod;
 import android.util.DisplayMetrics;
 import android.util.Pair;
 import android.view.Gravity;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
@@ -434,7 +435,7 @@ public class MainActivity extends Activity {
 
         for (int i = 0; i <= gameBoard.getBoardDimension(); i++){
             TextView label = new TextView(this);
-            label.setBackgroundColor(Color.LTGRAY);
+            label.setBackgroundColor(Color.rgb(149,155,165));
             label.setLayoutParams(p);
             label.setGravity(Gravity.CENTER);
             label.setTextColor(Color.BLACK);
@@ -454,7 +455,7 @@ public class MainActivity extends Activity {
 
         for (int i = 1; i <= gameBoard.getBoardDimension(); i++){
             TextView label = new TextView(this);
-            label.setBackgroundColor(Color.LTGRAY);
+            label.setBackgroundColor(Color.rgb(149,155,165));
             label.setLayoutParams(p);
             label.setGravity(Gravity.CENTER);
             label.setTextColor(Color.BLACK);
@@ -470,7 +471,7 @@ public class MainActivity extends Activity {
         GridLayout grid = findViewById(R.id.konaneLayout);
         grid.setRowCount(gameBoard.getBoardDimension());
         grid.setColumnCount(gameBoard.getBoardDimension());
-        grid.setBackgroundColor(Color.GRAY);
+        //grid.setBackgroundColor(Color.);
 
         for (int i = 0; i < gameBoard.board.length; i++) {
             for (int j = 0; j < gameBoard.board[i].length; j++) {
@@ -492,10 +493,15 @@ public class MainActivity extends Activity {
 
                 if (gameBoard.board[i][j].equals(gameBoard.white)) {
                     button.setImageResource(R.drawable.white);
+                    button.setBackgroundColor(Color.LTGRAY);
                 } else if (gameBoard.board[i][j].equals(gameBoard.black)) {
                     button.setImageResource(R.drawable.black);
+                    button.setBackgroundColor(Color.GRAY);
                 } else if (gameBoard.board[i][j].equals(gameBoard.empty)) {
                     button.setImageResource(R.drawable.empty);
+                    if (gameBoard.isBlack(i,j)) button.setBackgroundColor(Color.GRAY);
+                    else button.setBackgroundColor(Color.LTGRAY);
+
                 }
                 //---add the button to the grid View---
                 GridLayout.Spec gridRow = GridLayout.spec(i, 1);
@@ -524,7 +530,7 @@ public class MainActivity extends Activity {
                            if (gameBoard.getIsBlackComputer() && gameBoard.getBlackTurn()){
                                makeToast("Its Computer's turn");
                                click = 0;
-                               sourceClick.setBackgroundColor(0);
+                               sourceClick.setBackgroundColor(Color.GRAY);
                                clearBackground();
                            }
 
@@ -532,7 +538,7 @@ public class MainActivity extends Activity {
                            if (gameBoard.getIsWhiteComputer() && gameBoard.getWhiteTurn()){
                                makeToast("Its Computer's turn");
                                click = 0;
-                               sourceClick.setBackgroundColor(0);
+                               sourceClick.setBackgroundColor(Color.LTGRAY);
                                clearBackground();
                            }
                        }
@@ -548,8 +554,8 @@ public class MainActivity extends Activity {
                            //---make move only if its a valid move---
                            if (gameBoard.isEmptyStone(dstRow, dstCol) && gameBoard.isValid(srcRow, srcCol, dstRow, dstCol)) {
                                makeMove(sourceClick, destinationClick);
-                               sourceClick.setBackgroundColor(0);
-                               destinationClick.setBackgroundColor(0);
+                               //sourceClick.setBackgroundColor(0);
+                               //destinationClick.setBackgroundColor(0);
                                //---update scores by one---
                                if (gameBoard.getBlackTurn()) gameBoard.updateBlackScore(1);
                                else gameBoard.updateWhiteScore(1);
@@ -591,12 +597,14 @@ public class MainActivity extends Activity {
                                else{
                                    click = 0;
                                }
-                               destinationClick.setBackgroundColor(0);
+                               //destinationClick.setBackgroundColor(0);
+                               clearBackground();
                            }
 
                        } else {
                            makeToast("Invalid");
-                           sourceClick.setBackgroundColor(0);
+                           //sourceClick.setBackgroundColor(0);
+                           clearBackground();
                            click = 0;
                        }
                    }
@@ -753,9 +761,14 @@ public class MainActivity extends Activity {
     private void clearBackground(){
         GridLayout grid = findViewById(R.id.konaneLayout);
         int t = gameBoard.getBoardDimension();
-        for (int i = 0; i<t*t; i++) {
-            ImageView button = (ImageView) grid.getChildAt(i);
-            button.setBackgroundColor(0);
+        int h = 0;
+        for (int i = 0; i<t; i++) {
+            for (int j = 0; j < t; j++) {
+                ImageView button = (ImageView) grid.getChildAt(h);
+                h++;
+                if (gameBoard.isBlack(i,j)) button.setBackgroundColor(Color.GRAY);
+                else button.setBackgroundColor(Color.LTGRAY);
+            }
         }
     }
 
