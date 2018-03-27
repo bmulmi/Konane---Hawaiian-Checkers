@@ -7,6 +7,8 @@
 
 package edu.ramapo.bibhash.konane.model;
 
+import android.util.Pair;
+
 /**
  * Created by Bibhash on 3/23/2018.
  */

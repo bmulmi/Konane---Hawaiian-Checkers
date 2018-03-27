@@ -70,7 +70,7 @@ public class Board{
     //accessor true or false for White as a Computer
     public boolean getIsWhiteComputer (){return whitePlayer.isComputer();}
 
-    /**----------mutators for player's private data----------**/
+    /**----------mutator for player's private data----------**/
     /*
     parameters: int score
     returns: nothing
@@ -106,7 +106,7 @@ public class Board{
     public void setWhiteAsComputer(){ whiteIsComputer = true; whitePlayer.setComputerPlays(true); blackPlayer.setComputerPlays(false);}
 
 
-    /**----------public functions of Board Class----------**/
+    /**----------functions of Board Class----------**/
     /*
     parameters: int dimension
     returns: nothing
@@ -206,7 +206,7 @@ public class Board{
         } while ((row % 2 == 1 || col % 2 == 1));
 
         //update the board array
-        removedBtn1 = new Pair(row, col);
+        removedBtn1 = new Pair<>(row, col);
         board[row][col] = empty;
         //row and col odd = white
         do {
@@ -526,7 +526,7 @@ public class Board{
                 if (getIsWhiteComputer()) heuristic = computerScore - humanScore;
                 else heuristic = humanScore - computerScore;
             }
-            System.out.println("-----*-----");
+            System.out.println("-----------*-----------");
             System.out.println("Heuristic returned: " + heuristic);
             return heuristic;
         }
@@ -546,7 +546,6 @@ public class Board{
 
                 //Store the current board
                 String[][] previousBoard = new String[boardDimension][boardDimension];
-
                 copyBoard(previousBoard, MMboard);
 
                 //make the move in the passed board
@@ -576,7 +575,9 @@ public class Board{
                 if (tempHeuristic > bestHeuristic){
                     //set the returned child as the best child of current child
                     passedChild.bestChild = passingChild;
+                    //store the next best gameState as Child object to get the independent maxmimizer and minimizer scores
                     tempBestChild = passedChild;
+                    //store the next best game state as Move object to get the source and destination moves
                     tempBest = child;
                     bestHeuristic = tempHeuristic;
                 }
@@ -647,7 +648,10 @@ public class Board{
 
                 if(prune){
                     if (bestHeuristic < beta) beta = bestHeuristic;
-                    if (beta <= alpha) break;
+                    if (beta <= alpha){
+                        System.out.println("****pruned rest of the children****");
+                        break;
+                    }
                 }
                 //restore the values
                 minPoints-=childMove.score;
@@ -683,38 +687,24 @@ public class Board{
         Move source = move.clone(moves.first);
         Move destination = move.clone(moves.second);
 
+        //---get all the nodes from source to destination---
         Stack<Pair<Integer, Integer>> jumps = getPath(source, destination);
 
         int sourceRow = source.row;
         int sourceCol = source.col;
-        //System.out.println("-----next move(s)-----");
-        //System.out.println("source: "+source.row+" X "+ source.col);
 
-        //make all the moves individually
+        //---make all the moves individually---
         while(!jumps.isEmpty()){
             Pair<Integer, Integer> nextJump = jumps.pop();
             int destinationRow = nextJump.first;
             int destinationCol = nextJump.second;
 
-            //System.out.println("destination: "+ destinationRow + " X "+ destinationCol);
-
             MMboard = updateButtonForMiniMax(sourceRow, sourceCol, destinationRow, destinationCol, MMboard);
 
-            //set the destination as the new source for the next move to be made
+            //---set the destination as the new source for the next move to be made---
             sourceRow = destinationRow;
             sourceCol = destinationCol;
-
-            //check the board after the move is made
-            /*for(int i = 0; i < boardDimension; i++){
-                for (int j = 0; j<boardDimension; j++){
-                    System.out.print(MMboard[i][j] + " ");
-                }
-                System.out.println("\n");
-            }*/
         }
-        /*System.out.println("Check for source and destination: \n");
-        System.out.println("source: " + source.row + " X " + source.col);
-        System.out.println("destination: " + destination.row + " X " + destination.col);*/
     }
 
     //parameters: source node, destination node
@@ -744,12 +734,15 @@ public class Board{
     private Queue<Pair<Move,Move>> getAllAvailableMoves(String[][]MMboard, boolean computer){
         int row = -1;
         int col = -1;
-        System.out.println("*****new Node*****");
+        System.out.println("*******new Node*******");
         //initialise the Vector that stores all Moves
         Queue<Pair<Move, Move>> allMoves = new LinkedList<>();
         //visit every node of the board
-        while ((row < boardDimension-2 && row >=-1) || (col < boardDimension-2 && col>=-1)) {
+        while ((row < boardDimension-1 && row >=-1) || (col < boardDimension-1 && col>=-1)) {
+            //for first loop
             if(row == -1) row++;
+
+            //for every loop
             if (col < boardDimension-1 && col >= -1) col++;
             else if (row < boardDimension-1){
                 row++;
@@ -789,6 +782,7 @@ public class Board{
         return ((isValidForMiniMax(sR, sC, sR+2, sC, MMboard))||(isValidForMiniMax(sR,sC,sR-2,sC, MMboard))||(isValidForMiniMax(sR,sC, sR, sC+2, MMboard))||isValidForMiniMax(sR,sC,sR,sC-2, MMboard));
     }
 
+    //Depth First Search Algorithm
     private Vector<Move>destinationNodes = new Vector<>();
     private Vector<Move> DepthFirstSimluation(Move move, String[][]MMboard){
         //---must have a valid next move---
@@ -884,11 +878,115 @@ public class Board{
     }
 
     /*
+    parameters: source row, source column, destination row, destination column, current board array
+    returns: modified board array after making the moves from source to destination
+     */
+    //makes the jump for the board passed.
+    public String[][] updateButtonForMiniMax(int srcRow, int srcCol, int dstRow, int dstCol, String[][]board){
+        //-------update the destination------
+        if (isBlack(srcRow,srcCol)) board[dstRow][dstCol] = black;
+        else board[dstRow][dstCol] = white;
+
+        //-------update the source-----------
+        board[srcRow][srcCol] = empty;
+
+        //-------update the captured stone--------
+        int temp = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
+        int btnRow = temp/10;
+        int btnCol = temp%10;
+        board[btnRow][btnCol] = empty;
+
+        return board;
+    }
+
+    /*
+    parameters: source row, source column, destination row, destination column, current board array, source move from DFS
+    returns: boolean value
+     */
+    //checks if the move is valid or not
+    public boolean isValidForMiniMax(int srcRow, int srcCol, int dstRow, int dstCol, String[][]board){
+        int slot;
+        //for black stones
+        if (isBlack(dstRow, dstCol) && isBlack(srcRow, srcCol) && isTwoSlotsAway(srcRow, srcCol, dstRow, dstCol) && isInBoard(dstRow, dstCol)){
+            //---check if destination is an empty slot---
+            if(isEmptyStoneForMiniMax(dstRow, dstCol, board)) { //get the stone that is to be captured
+                slot = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
+                return (board[slot / 10][slot % 10].equals(white));
+            }
+            else return false;
+        }
+        //for white stones
+        else if (isWhite(dstRow,dstCol) && isWhite(srcRow, srcCol) && isTwoSlotsAway(srcRow,srcCol,dstRow,dstCol) && isInBoard(dstRow, dstCol)){
+            if (isEmptyStoneForMiniMax(dstRow,dstCol, board)) {
+                slot = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
+                return (board[slot / 10][slot % 10].equals(black));
+            }
+            else return false;
+        }
+        //for empty slots
+        else return false;
+    }
+
+    /*
+    parameters: destination row, destination column, current board array
+    returns: boolean value
+     */
+    //checks if the slot in the passed coordinate is empty or not
+    public boolean isEmptyStoneForMiniMax(int dR, int dC, String[][]board){
+
+        if (!isInBoard(dR, dC)){
+            return false;
+        }
+
+        else {
+            return (board[dR][dC].equals(empty));
+        }
+    }
+
+    /*
+    parameters: current board array
+    returns: boolean value
+     */
+    //checks if there is valid moves remaining for black stone in the current board
+    public boolean checkRemainingMovesForBlackMiniMax(String [][] board) {
+        int count = 0;
+        //go to every node in the board
+        for (int i = 0; i < boardDimension; i++) {
+            for (int j = 0; j < boardDimension; j++) {
+                //check if slot is black
+                if (isBlack(i,j) && !isEmptyStoneForMiniMax(i,j, board)) {
+                    if (isValidForMiniMax(i, j, i - 2, j,board)||isValidForMiniMax(i, j, i + 2, j,board)||isValidForMiniMax(i, j, i, j + 2, board)||isValidForMiniMax(i, j, i, j - 2, board)){
+                        count++;
+                    }
+                }
+            }
+        }
+        return (count!=0);
+    }
+
+    //same function as above, but for white stones
+    public boolean checkRemainingMovesForWhiteMiniMax(String[][]board){
+        int count = 0;
+        for (int i = 0; i < boardDimension; i++) {
+            for (int j = 0; j < boardDimension; j++) {
+                if (isWhite(i,j) && !isEmptyStoneForMiniMax(i,j, board)) {
+                    if (isValidForMiniMax(i, j, i - 2, j, board) || isValidForMiniMax(i, j, i + 2, j, board) || isValidForMiniMax(i, j, i, j + 2, board) || isValidForMiniMax(i, j, i, j - 2, board)) {
+                        count ++;
+                    }
+                }
+            }
+        }
+        return (count != 0);
+    }
+
+
+    /*
     parameters: Move source, String[][] current Board
     returns: Vector<Move> all possible destinations from source
      */
     //does Depth First Search to all the possible move nodes
-/*
+
+    /*
     private Vector<Move> DFS(Move move, String [][]MMboard){
         Vector<Move> moves = new Vector<>();
         Stack<Move> stack = new Stack<>();
@@ -982,115 +1080,4 @@ public class Board{
     }
 */
 
-    /*
-    parameters: source row, source column, destination row, destination column, current board array
-    returns: modified board array after making the moves from source to destination
-     */
-    //makes the jump for the board passed.
-    public String[][] updateButtonForMiniMax(int srcRow, int srcCol, int dstRow, int dstCol, String[][]board){
-        //-------update the destination------
-        if (isBlack(srcRow,srcCol)) board[dstRow][dstCol] = black;
-        else board[dstRow][dstCol] = white;
-
-        //-------update the source-----------
-        board[srcRow][srcCol] = empty;
-
-        //-------update the captured stone--------
-        int temp = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
-        int btnRow = temp/10;
-        int btnCol = temp%10;
-        board[btnRow][btnCol] = empty;
-
-        return board;
-    }
-
-    /*
-    parameters: source row, source column, destination row, destination column, current board array, source move from DFS
-    returns: boolean value
-     */
-    //checks if the move is valid or not
-    public boolean isValidForMiniMax(int srcRow, int srcCol, int dstRow, int dstCol, String[][]board){
-        int slot;
-        //for black stones
-        if (isBlack(dstRow, dstCol) && isBlack(srcRow, srcCol) && isTwoSlotsAway(srcRow, srcCol, dstRow, dstCol) && isInBoard(dstRow, dstCol)){
-            //---check if destination is an empty slot---
-            if(isEmptyStoneForMiniMax(dstRow, dstCol, board)) {
-                //get the stone that is to be captured
-                slot = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
-                return (board[slot / 10][slot % 10].equals(white));
-            }
-            //---for the cases in DFS when we reach the starting move from a child---
-            /*else if (dstRow == move.row && dstCol == move.col){
-                slot = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
-                return (board[slot / 10][slot % 10].equals(white));
-            }*/
-            else return false;
-        }
-        //for white stones
-        else if (isWhite(dstRow,dstCol) && isWhite(srcRow, srcCol) && isTwoSlotsAway(srcRow,srcCol,dstRow,dstCol) && isInBoard(dstRow, dstCol)){
-            if (isEmptyStoneForMiniMax(dstRow,dstCol, board)) {
-                slot = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
-                return (board[slot / 10][slot % 10].equals(black));
-            }
-            /*else if ( dstRow == move.row && dstCol == move.col){
-                slot = slotsToRemove(srcRow, srcCol, dstRow, dstCol);
-                return (board[slot / 10][slot % 10].equals(black));
-            }*/
-            else return false;
-        }
-        //for empty slots
-        else return false;
-    }
-
-    /*
-    parameters: destination row, destination column, current board array
-    returns: boolean value
-     */
-    //checks if the slot in the passed coordinate is empty or not
-    public boolean isEmptyStoneForMiniMax(int dR, int dC, String[][]board){
-
-        if (!isInBoard(dR, dC)){
-            return false;
-        }
-
-        else {
-            return (board[dR][dC].equals(empty));
-        }
-    }
-
-    /*
-    parameters: current board array
-    returns: boolean value
-     */
-    //checks if there is valid moves remaining for black stone in the current board
-    public boolean checkRemainingMovesForBlackMiniMax(String [][] board) {
-        int count = 0;
-        //go to every node in the board
-        for (int i = 0; i < boardDimension; i++) {
-            for (int j = 0; j < boardDimension; j++) {
-                //check if slot is black
-                if (isBlack(i,j) && !isEmptyStoneForMiniMax(i,j, board)) {
-                    if (isValidForMiniMax(i, j, i - 2, j,board)||isValidForMiniMax(i, j, i + 2, j,board)||isValidForMiniMax(i, j, i, j + 2, board)||isValidForMiniMax(i, j, i, j - 2, board)){
-                        count++;
-                    }
-                }
-            }
-        }
-        return (count!=0);
-    }
-
-    //same function as above, but for white stones
-    public boolean checkRemainingMovesForWhiteMiniMax(String[][]board){
-        int count = 0;
-        for (int i = 0; i < boardDimension; i++) {
-            for (int j = 0; j < boardDimension; j++) {
-                if (isWhite(i,j) && !isEmptyStoneForMiniMax(i,j, board)) {
-                    if (isValidForMiniMax(i, j, i - 2, j, board) || isValidForMiniMax(i, j, i + 2, j, board) || isValidForMiniMax(i, j, i, j + 2, board) || isValidForMiniMax(i, j, i, j - 2, board)) {
-                        count ++;
-                    }
-                }
-            }
-        }
-        return (count != 0);
-    }
 }

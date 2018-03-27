@@ -31,13 +31,13 @@ public class EndActivity extends Activity {
         String winnerName;
 
         if (pl1score > pl2score){
-            winnerName = "Player 1 \nBlack Stone \nWINS";
+            winnerName = "Player 1\nBlack Stone\nWINS";
         }
         else if(pl2score > pl1score){
-            winnerName = "Player 2 \nWhite Stone \nWINS";
+            winnerName = "Player 2\nWhite Stone\nWINS";
         }
         else{
-            winnerName = "No One Wins \nIts a \nDRAW";
+            winnerName = "No One Wins\nIts a\nDRAW";
         }
         TextView text = findViewById(R.id.winnerName);
         text.setText(winnerName);

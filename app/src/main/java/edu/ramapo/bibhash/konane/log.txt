@@ -42,3 +42,6 @@
 - Found a bug. Null object returned after calling minimax some while later. Fixed. 0.5 Hrs
 - DFS was not working correctly. Re-coded the DFS function. Successful. 3 Hrs
 
+3/27/2018:
+- getAllMoves function was not visiting the last row and column. Fixed it. 3 Hrs.
+

@@ -115,6 +115,7 @@ public class MainActivity extends Activity {
         }
     }
 
+    //function to prompt user to guess the coordinates of the slots that were removed
     public void guessTheSlot(){
         Pair<Integer, Integer>[] temp = gameBoard.getRemovedBtns();
         int rowb,colb,roww,colw;
@@ -195,7 +196,7 @@ public class MainActivity extends Activity {
         String value = cutOff.getText().toString();
         //----------no value entered----------
         if (value.equals("")){
-            //---set plycutoff as the highest value---
+            //---set plyCutOff as the highest value---
             plyCutOff = Integer.MAX_VALUE;
             makeToast("Ply Cut-off is max.");
         }
@@ -208,6 +209,7 @@ public class MainActivity extends Activity {
         if ((gameBoard.getBlackTurn() && gameBoard.getIsBlackComputer()) || (gameBoard.getWhiteTurn() && gameBoard.getIsWhiteComputer())) {
             makeToast("Ply Cut-off entered: " + plyCutOff);
             calledMinimax = true;
+            //---call the algorithm---
             gameBoard.getMinimaxMoves(plyCutOff, prune, true);
             //---bestMove is updated---
             //---get the source---
@@ -238,10 +240,13 @@ public class MainActivity extends Activity {
             //---get the destinations---
             Stack<Pair<Integer, Integer>> jumps = gameBoard.getPath(temp.first, temp.second);
 
+            System.out.println("Source: "+sourceRow+"X"+sourceCol);
+            System.out.println("Destination: \n");
             //---animate every one of them---
             while (!jumps.isEmpty()) {
                 score++;
                 Pair<Integer, Integer> j = jumps.pop();
+                System.out.println(j.first+"X"+j.second);
                 tempId = (j.first+1) * 10 + (j.second+1);
                 btn = findViewById(tempId);
                 animateButtons(btn);
@@ -251,10 +256,15 @@ public class MainActivity extends Activity {
             int maxSc = 0;
             int minSc = 0;
             Child tempChild = gameBoard.cld;
+            System.out.println("Moves made: ");
             while ( tempChild != null){
                 maxSc += tempChild.maximizerScore;
                 minSc += tempChild.minimizerScore;
+                System.out.println("Points Earned (max): "+maxSc);
+                System.out.println("Points Earned (min): "+minSc);
                 tempChild = tempChild.bestChild;
+                //System.out.println("Source: "+tempChild.bestMove.first.row+"X"+tempChild.bestMove.first.col+"\n");
+                //System.out.println("Destination: "+tempChild.bestMove.second.row+"X"+tempChild.bestMove.second.col);
             }
 
             String str = "Points Gained Computer: " + maxSc + "\nPoints Gained Human: " + minSc +"\nImmediate jumps: " + score;
@@ -289,10 +299,13 @@ public class MainActivity extends Activity {
             Stack<Pair<Integer, Integer>> jumps = gameBoard.getPath(temp.first, temp.second);
             int score = 0;
 
+            System.out.println("Source: "+sourceRow+"X"+sourceCol);
+            System.out.println("Destination: \n");
             //---make every move---
             while (!jumps.isEmpty()) {
                 score++;
                 Pair<Integer, Integer> j = jumps.pop();
+                System.out.println(j.first+"X"+j.second);
 
                 tempId = (j.first+1) * 10 + (j.second+1);
                 ImageView destinationBtn = findViewById(tempId);
@@ -361,7 +374,8 @@ public class MainActivity extends Activity {
             }
 
             animateButtons(btn);
-
+            System.out.println("Source: "+sourceRow+"X"+sourceCol);
+            System.out.println("Destination: \n");
             int score = 0;
             //---get the destinations---
             Stack<Pair<Integer, Integer>> jumps = gameBoard.getPath(temp.first, temp.second);
@@ -370,6 +384,7 @@ public class MainActivity extends Activity {
             while (!jumps.isEmpty()) {
                 score++;
                 Pair<Integer, Integer> j = jumps.pop();
+                System.out.println(j.first+"X"+j.second);
                 tempId = (j.first+1) * 10 + (j.second+1);
                 btn = findViewById(tempId);
                 animateButtons(btn);
@@ -379,10 +394,15 @@ public class MainActivity extends Activity {
             int maxSc = 0;
             int minSc = 0;
             Child tempChild = gameBoard.cld;
+            System.out.println("Moves made: ");
             while ( tempChild != null){
                 maxSc += tempChild.maximizerScore;
+                System.out.println("Points earned (max): "+maxSc);
                 minSc += tempChild.minimizerScore;
+                System.out.println("Points earned (min): "+minSc);
                 tempChild = tempChild.bestChild;
+                //System.out.println("Source: "+tempChild.bestMove.first.row+"X"+tempChild.bestMove.first.col+"\n");
+                //System.out.println("Destination: "+tempChild.bestMove.second.row+"X"+tempChild.bestMove.second.col+"\n");
             }
 
             //makeToast("Points Gained Human: "+ gameBoard.MaximizerScore);
@@ -493,10 +513,10 @@ public class MainActivity extends Activity {
 
                 if (gameBoard.board[i][j].equals(gameBoard.white)) {
                     button.setImageResource(R.drawable.white);
-                    button.setBackgroundColor(Color.LTGRAY);
+                    button.setBackgroundColor(Color.GRAY);
                 } else if (gameBoard.board[i][j].equals(gameBoard.black)) {
                     button.setImageResource(R.drawable.black);
-                    button.setBackgroundColor(Color.GRAY);
+                    button.setBackgroundColor(Color.DKGRAY);
                 } else if (gameBoard.board[i][j].equals(gameBoard.empty)) {
                     button.setImageResource(R.drawable.empty);
                     if (gameBoard.isBlack(i,j)) button.setBackgroundColor(Color.GRAY);
@@ -530,7 +550,7 @@ public class MainActivity extends Activity {
                            if (gameBoard.getIsBlackComputer() && gameBoard.getBlackTurn()){
                                makeToast("Its Computer's turn");
                                click = 0;
-                               sourceClick.setBackgroundColor(Color.GRAY);
+                               //sourceClick.setBackgroundColor(Color.GRAY);
                                clearBackground();
                            }
 
@@ -538,7 +558,15 @@ public class MainActivity extends Activity {
                            if (gameBoard.getIsWhiteComputer() && gameBoard.getWhiteTurn()){
                                makeToast("Its Computer's turn");
                                click = 0;
-                               sourceClick.setBackgroundColor(Color.LTGRAY);
+                               //sourceClick.setBackgroundColor(Color.LTGRAY);
+                               clearBackground();
+                           }
+
+                           //black is human, black's turn, but user presses white-----------------------------------------------||white is human, white's turn, but user presses black
+                           if((gameBoard.getIsWhiteComputer() && gameBoard.getBlackTurn() && gameBoard.isWhite(srcRow, srcCol)) || (gameBoard.getIsBlackComputer() && gameBoard.getWhiteTurn() && gameBoard.isBlack(srcRow,srcCol))){
+                               makeToast("Wrong Stone");
+                               click = 0;
+                               //sourceClick.setBackgroundColor(Color.LTGRAY);
                                clearBackground();
                            }
                        }
@@ -766,8 +794,8 @@ public class MainActivity extends Activity {
             for (int j = 0; j < t; j++) {
                 ImageView button = (ImageView) grid.getChildAt(h);
                 h++;
-                if (gameBoard.isBlack(i,j)) button.setBackgroundColor(Color.GRAY);
-                else button.setBackgroundColor(Color.LTGRAY);
+                if (gameBoard.isBlack(i,j)) button.setBackgroundColor(Color.DKGRAY);
+                else button.setBackgroundColor(Color.GRAY);
             }
         }
     }
